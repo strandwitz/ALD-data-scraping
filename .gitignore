@@ -1,0 +1,14 @@
+# MacOS
+.DS_Store
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+.python-version
+*venv/
+env/
+
+.ipynb_checkpoints
+
