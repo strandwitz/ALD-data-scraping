@@ -55,6 +55,8 @@ filt_temps = df[Z].isin(count_x[count_x > m].index)
 filt = filt_minpoints & filt_temps
 
 df_plot = df.loc[filt, :] # create new df with filtered values
+df_plot2 = df.loc[filt_minpoints, :] # create new df with filtered values
+
 # print(df_plot.tail())
 
 # print(count_x)
@@ -65,26 +67,78 @@ print("---------------------------------------------------")
 
 
 # print(df[Z].value_counts(), "\n")
-print(df_plot[Z].value_counts(), "\n")
-print(df_plot.groupby(Z)[X].nunique(), "\n")
+print(df_plot2[Z].value_counts(), "\n")
+print(df_plot2.groupby(Z)[X].nunique(), "\n")
 
 
-# PLOT
+def get_line_plot(df, x, y, z):
+    fig, ax = plt.subplots()
+    # ax = fig.add_subplot()
+    # ax = sns.lineplot(data=df, x=x, y=y, hue=z, marker="o", ci=None, markersize=4, alpha = 0.9, linestyle='')
+    # sns.lineplot(data=df, x=x, y=y, ax=ax, sort=False, hue=z, dashes=False, alpha=0.3, legend=False, ci=None)
 
-# df.plot(x=X, y=Y, marker='x', kind='scatter') # scatter plot
-# sns.scatterplot(data=df, x=X, y=Y, hue=Z) # scatter plot coloured by material
-# sns.regplot(data=df, x=X, y=Y, ci=None) # scatter plot with linear regression
-sns.lmplot(data=df_plot, x=X, y=Y, hue=Z, ci=None, scatter_kws={"s": 10, "alpha":0.4}, line_kws={"lw":1.25, "alpha":0.5}) # scatter plot with linear regression for each category Z 
+    g1 = sns.scatterplot(ax=ax, data=df, x=x, y=y, hue=z, alpha=0.6, s=20, style=z)
+    g2 = sns.lineplot(ax=ax, data=df, x=x, y=y, hue=z, alpha=0.4, ci=None, legend=False)
 
-# SET PLOT TITLE
-plt.title("Density vs Temperature ALD Thin Films")
+    # SET PLOT TITLE
+    plt.title("Density vs Temperature ALD Thin Films")
 
-# SET AXIS LABELS
-plt.xlabel("Deposition Temperature (°C)")
-plt.ylabel("Density $(g.cm^{-3})$")
+    # SET AXIS LABELS
+    plt.xlabel("Deposition Temperature (°C)")
+    plt.ylabel("Density $(g.cm^{-3})$")
+
+
+    # df.groupby([x,z]).count()[y].unstack().plot(ax=ax, marker="o", markersize=4, alpha=0.6)
+
+    # plt.scatter(df[x], df[y])
+
+    # for label, df_g in df.groupby(z):
+    #     df_g.vals.plot(kind="kde", ax=ax, label=label)
+
+    plt.legend(title=f"{z}s", loc=2, bbox_to_anchor=(1.01, 1));
+
+
+    return fig
+
+def get_fit_plot(df, x, y, z):
+    # plot
+
+    # PLOT
+    # fig1, ax1 = plt.subplots()
+    # fig2, ax2 = plt.subplots()
+    # fig = plt.figure()
+    # ax = fig.add_subplot()
+
+    # df.plot(x=X, y=Y, marker='x', kind='scatter') # scatter plot
+    # sns.scatterplot(data=df, x=X, y=Y, hue=Z) # scatter plot coloured by material
+    # sns.regplot(data=df, x=X, y=Y, ci=None) # scatter plot with linear regression
+    
+    fig = sns.lmplot(data=df, x=x, y=y, hue=z, ci=None, scatter_kws={"s": 10, "alpha":0.6}, line_kws={"lw":1.25, "alpha":0.5}) # scatter plot with linear regression for each category Z 
+    # splot2 = sns.lmplot(data=df_plot, x=X, y=Y, hue=Z, ci=None, fit_reg=False, scatter_kws={"s": 10, "alpha":0.4}) # scatter plot with linear regression for each category Z 
+    # splot2 = sns.lineplot(data=df_plot, x=X, y=Y, hue=Z, marker="o")
+
+    # g.map_dataframe(sns.scatterplot, x=x, y=y, hue=z)
+
+
+    # # sfig1 = splot1.get_figure()
+    # # sfig2 = splot2.get_figure()
+
+    # SET PLOT TITLE
+    plt.title("Density vs Temperature ALD Thin Films")
+
+    # SET AXIS LABELS
+    plt.xlabel("Deposition Temperature (°C)")
+    plt.ylabel("Density $(g.cm^{-3})$")
+
+    return fig
+
+fig1 = get_fit_plot(df_plot, X, Y, Z)
+fig2 = get_line_plot(df_plot2, X, Y, Z)
 
 
 # plt.show()
 
 # bbox_inches stops title from being cut off in the plot
-plt.savefig('plots/plot1.png', dpi=150, bbox_inches="tight")
+fig1.savefig('plots/plot1.png', dpi=150, bbox_inches="tight")
+fig2.savefig('plots/plot2.png', dpi=150, bbox_inches="tight")
+# splot2.savefig('plots/plot4.png', dpi=150, bbox_inches="tight")
