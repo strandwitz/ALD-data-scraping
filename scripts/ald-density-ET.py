@@ -17,8 +17,8 @@ sheet_id = "1CnYIYPMymwAKaVlElBk4ceNN2RtTxpKIHTzuTRjfY3s"
 url_exp = f"https://docs.google.com/spreadsheets/d/{sheet_id}/gviz/tq?tqx=out:csv&sheet={sheet_name_exp}"
 url_thr = f"https://docs.google.com/spreadsheets/d/{sheet_id}/gviz/tq?tqx=out:csv&sheet={sheet_name_thr}"
 
-url_exp = "data/data_exp.csv"
-url_thr = "data/data_thr.csv"
+# url_exp = "data/data_exp.csv"
+# url_thr = "data/data_thr.csv"
 
 # LOAD DATA
 df_exp = pd.read_csv(url_exp)
@@ -59,18 +59,38 @@ thr_density.rename(columns={"Density gcm3": "Theoretical Density"}, inplace=True
 print(exp_density.head())
 print(thr_density.head())
 
-df_merged = pd.merge(exp_density, thr_density, on="Material", how="left")
+df_merged = pd.merge(exp_density, thr_density, on="Material")
 
-print(df_merged.tail(30))
+print(df_merged.info())
 
 
 
 
 # PLOT
 
+def plot_data(df, x, y, z):
 
-df_merged.plot(x="Theoretical Density", y="Experimental Density", marker='x', kind='scatter') # scatter plot
+    fig, ax = plt.subplots(figsize=(10,8)) # figsize=(6, 7)
+    # ax.grid(True, color = '#e8e8e6', linestyle = '--', linewidth = 0.5)
+    # ax = fig.add_subplot()
+    # ax = sns.lineplot(data=df, x=x, y=y, hue=z, marker="o", ci=None, markersize=4, alpha = 0.9, linestyle='')
+    # sns.lineplot(data=df, x=x, y=y, ax=ax, sort=False, hue=z, dashes=False, alpha=0.3, legend=False, ci=None)
+    order_z = list(df.sort_values(by=[z], ascending=True)[z].unique())
+    # random.Random(2).shuffle(order_z)
+    # print(order_z)
+
+    # g2 = sns.lineplot(ax=ax, data=df, x=x, y=y, hue=z, alpha=0.4, lw=1, ci=None, legend=False, hue_order=order_z)
+    ax.axline((0,0), slope=1, color='silver', lw=1.5, label='_none_')
+    g1 = sns.scatterplot(ax=ax, data=df, x=x, y=y, hue=z, alpha=0.6, s=35, style=z, hue_order=order_z, style_order=order_z)
+
+    return fig
 
 
-plt.show()
+# df_merged.plot(x="Theoretical Density", y="Experimental Density", marker='x', kind='scatter') # scatter plot
+fig = plot_data(df_merged, x="Theoretical Density", y="Experimental Density", z="Material")
+
+
+plt.savefig('plots/plotDensities.png', dpi=200, bbox_inches="tight")
+
+# plt.show()
 
