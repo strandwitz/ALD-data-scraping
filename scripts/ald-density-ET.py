@@ -37,15 +37,16 @@ df_thr.columns = df_thr.columns.str.replace(r'[ ]{2,}',' ', regex=True) # make s
 
 # VIEW DATA
 print(list(df_exp.columns), "\n") # view column names
-print(df_exp.info(), "\n") # view column names and types
-# print(df_exp.head(), "\n") # view the first few rows of the dataframe
-
-print("-"*30)
+# # print(df_exp.info(), "\n") # view column names and types
+# # print(df_exp.head(), "\n") # view the first few rows of the dataframe
+# print(df_exp["Material"].value_counts())
+# print("-"*60) # visual separator on terminal
 
 print(list(df_thr.columns), "\n") # view column names
-print(df_thr.info(), "\n") # view column names and types
-# print(df_thr.head(), "\n") # view the first few rows of the dataframe
-
+# # print(df_thr.info(), "\n") # view column names and types
+# # print(df_thr.head(), "\n") # view the first few rows of the dataframe
+# print(df_thr["Material"].value_counts())
+print("-"*60) # visual separator on terminal
 
 
 # GET DATA TO PLOT
@@ -53,18 +54,50 @@ print(df_thr.info(), "\n") # view column names and types
 exp_density = df_exp.loc[:,["Material", "Density (g.cm-3)"]]
 thr_density = df_thr.loc[:,["Material", "Density gcm3"]]
 
-exp_density.rename(columns={"Density (g.cm-3)": "Experimental Density"}, inplace=True)
-thr_density.rename(columns={"Density gcm3": "Theoretical Density"}, inplace=True)
+NAME_EXP = "experimental"
+NAME_THR = "theoretical"
 
-print(exp_density.head())
-print(thr_density.head())
+exp_density.rename(columns={"Density (g.cm-3)": NAME_EXP}, inplace=True)
+thr_density.rename(columns={"Density gcm3": NAME_THR}, inplace=True)
+
+# print(exp_density.head())
+# print(thr_density.head())
+# print("-"*60) # visual separator on terminal
 
 df_merged = pd.merge(exp_density, thr_density, on="Material")
 
-print(df_merged.info())
+# print(df_merged["Material"].value_counts())
+# print(df_merged.info())
+# print(df_merged.head())
+# print("-"*60) # visual separator on terminal
 
+def get_tidy_df(df1, df2, cat, val, idv):
 
+    df_m1 = pd.melt(df1, id_vars=idv, var_name=cat, value_name=val)
+    df_m1.dropna(inplace=True)
+    # print(df_m1.info())
 
+    df_m2 = pd.melt(df2, id_vars=idv, var_name=cat, value_name=val)
+    df_m2.dropna(inplace=True)
+    # print(df_m2.info())
+
+    df_merged = pd.concat([df_m1, df_m2], ignore_index=True)
+    # print(df_merged.info())
+
+    return df_merged
+
+df_tidy = get_tidy_df(exp_density, thr_density, cat="Type", val="Density", idv="Material")
+print(df_tidy.info())
+print(df_tidy.head())
+
+def tidy_handler(df, group, y):
+    gb = df.groupby(group)
+    df_mean = gb[y].agg(np.mean)
+    df_mean = df_mean.reset_index()
+    print(df_mean.head(20), "\n")
+    print(df_mean.info(), "\n")
+
+# tidy_handler(df_tidy, ["Type", "Material"], y="Density")
 
 # PLOT
 
@@ -80,17 +113,50 @@ def plot_data(df, x, y, z):
     # print(order_z)
 
     # g2 = sns.lineplot(ax=ax, data=df, x=x, y=y, hue=z, alpha=0.4, lw=1, ci=None, legend=False, hue_order=order_z)
-    ax.axline((0,0), slope=1, color='silver', lw=1.5, label='_none_')
+    ax.axline((0,0), slope=1, color='silver', lw=1, ls='--', label='_none_')
     g1 = sns.scatterplot(ax=ax, data=df, x=x, y=y, hue=z, alpha=0.6, s=35, style=z, hue_order=order_z, style_order=order_z)
+
+    # for line in range(0,df.shape[0]):
+    #      plt.text(df[x][line], 0, df[z][line], horizontalalignment='center', size='small', color='black', weight='light')
+
 
     return fig
 
 
-# df_merged.plot(x="Theoretical Density", y="Experimental Density", marker='x', kind='scatter') # scatter plot
-fig = plot_data(df_merged, x="Theoretical Density", y="Experimental Density", z="Material")
+def plot_swarm(df, x, y, z):
+    # fig, ax = plt.subplots(figsize=(10,8)) # figsize=(6, 7)
+
+    order_z = list(df.sort_values(by=[z], ascending=True)[z].unique())
 
 
-plt.savefig('plots/plotDensities.png', dpi=200, bbox_inches="tight")
+    g1 = sns.catplot(data=df, x=x, y=y, col=z, col_wrap=5, alpha=0.8, sharex=True, sharey=False, kind="strip", jitter=False, height=5, aspect=1.25, ci=None)
+    # plt.xticks(rotation=90)
+
+    # ax1 = g1.axes[0]
+
+    # g1.set(ylim=(0,None), xlim=(0,None))
+
+    for ax in g1.axes.flatten():
+        ax.axline((0,0), slope=1, color='silver', lw=1, ls='--', label='_none_')
+        ax.tick_params(labelbottom=True, labelleft=True)
+
+        ax.set(xlim=(0,12))  # x axis starts at 0
+        ax.set(ylim=(0,12))  # y axis starts at 0
+
+
+
+
+    return g1
+
+
+
+# # df_merged.plot(x=NAME_THR, y=NAME_EXP, marker='x', kind='scatter') # scatter plot
+# fig1 = plot_data(df_merged, x=NAME_THR, y=NAME_EXP, z="Material")
+# fig2 = plot_swarm(df_tidy, x=NAME_THR, y=NAME_EXP, z="Material")
+
+
+# fig1.savefig('plots/plotDensities.png', dpi=200, bbox_inches="tight")
+# fig2.savefig('plots/plotDensities-2.png', dpi=300, bbox_inches="tight")
 
 # plt.show()
 
