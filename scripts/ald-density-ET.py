@@ -129,7 +129,7 @@ def plot_swarm(df, x, y, z):
     order_z = list(df.sort_values(by=[z], ascending=True)[z].unique())
 
 
-    g1 = sns.catplot(data=df, x=x, y=y, col=z, col_wrap=5, alpha=0.8, sharex=True, sharey=False, kind="strip", jitter=False, height=5, aspect=1.25, ci=None)
+    g1 = sns.catplot(data=df, x=y, y=y, hue=x, col=z, col_wrap=7, alpha=0.8, sharex=False, sharey=False, kind="strip", jitter=False, height=5, aspect=1.25, ci=None)
     # plt.xticks(rotation=90)
 
     # ax1 = g1.axes[0]
@@ -152,11 +152,11 @@ def plot_swarm(df, x, y, z):
 
 # # df_merged.plot(x=NAME_THR, y=NAME_EXP, marker='x', kind='scatter') # scatter plot
 # fig1 = plot_data(df_merged, x=NAME_THR, y=NAME_EXP, z="Material")
-# fig2 = plot_swarm(df_tidy, x=NAME_THR, y=NAME_EXP, z="Material")
+fig2 = plot_swarm(df_tidy, x="Type", y="Density", z="Material")
 
 
 # fig1.savefig('plots/plotDensities.png', dpi=200, bbox_inches="tight")
-# fig2.savefig('plots/plotDensities-2.png', dpi=300, bbox_inches="tight")
+fig2.savefig('plots/plotDensities-2.png', dpi=300, bbox_inches="tight")
 
 # plt.show()
 
