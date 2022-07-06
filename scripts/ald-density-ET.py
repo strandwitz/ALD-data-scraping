@@ -10,6 +10,7 @@ import numpy as np
 import seaborn as sns
 from scipy import stats
 import matplotlib.pyplot as plt
+import random
 
 sheet_name_exp = "FilmProps"
 sheet_name_thr = "TheorDensity"
@@ -86,24 +87,32 @@ def get_tidy_df(df1, df2, cat, val, idv):
 
     return df_merged
 
-df_tidy = get_tidy_df(exp_density, thr_density, cat="Type", val="Density", idv="Material")
-print(df_tidy.info())
-print(df_tidy.head())
+# df_tidy = get_tidy_df(exp_density, thr_density, cat="Type", val="Density", idv="Material")
+# print(df_tidy.info())
+# print(df_tidy.head())
 
 def tidy_handler(df, group, y):
-    gb = df.groupby(group)
-    df_mean = gb[y].agg(np.mean)
-    df_mean = df_mean.reset_index()
-    print(df_mean.head(20), "\n")
-    print(df_mean.info(), "\n")
+    # gb = df.groupby(group)
+    # df_mean = gb[y].agg(np.mean)
+    # df_mean = df_mean.reset_index()
+
+    # df['type_bool'] = (df['Type'] == "experimental").map({False: "theoretical", True: "experimental"})
+
+    # df.loc[]
+    print(df.head(20), "\n")
+    print(df.info(), "\n")
 
 # tidy_handler(df_tidy, ["Type", "Material"], y="Density")
+# print(df_tidy.info())
+# print(df_tidy.head())
+
+
 
 # PLOT
 
 def plot_data(df, x, y, z):
 
-    fig, ax = plt.subplots(figsize=(10,8)) # figsize=(6, 7)
+    fig, ax = plt.subplots(figsize=(16,9)) # figsize=(6, 7)
     # ax.grid(True, color = '#e8e8e6', linestyle = '--', linewidth = 0.5)
     # ax = fig.add_subplot()
     # ax = sns.lineplot(data=df, x=x, y=y, hue=z, marker="o", ci=None, markersize=4, alpha = 0.9, linestyle='')
@@ -113,50 +122,97 @@ def plot_data(df, x, y, z):
     # print(order_z)
 
     # g2 = sns.lineplot(ax=ax, data=df, x=x, y=y, hue=z, alpha=0.4, lw=1, ci=None, legend=False, hue_order=order_z)
-    ax.axline((0,0), slope=1, color='silver', lw=1, ls='--', label='_none_')
+    ax.axline((0,0), slope=1, color='silver', lw=1, ls='--', alpha=0.5, label='_none_')
     g1 = sns.scatterplot(ax=ax, data=df, x=x, y=y, hue=z, alpha=0.6, s=35, style=z, hue_order=order_z, style_order=order_z)
+    g2 = sns.scatterplot(ax=ax, data=df, x=x, y=x, color="black", alpha=0.9, s=15, marker="+")
 
-    # for line in range(0,df.shape[0]):
-    #      plt.text(df[x][line], 0, df[z][line], horizontalalignment='center', size='small', color='black', weight='light')
+    # filt = True
+    cols = [z, x]
+    # print(df.head())
+    df2 = df.loc[:,[x,y,z]]
+    df2.sort_values(by=[x,y], ascending=True, inplace=True)
+    df2.drop_duplicates(subset=cols, keep='last', inplace=True)
+    print(df2.head())
+    print(df2.shape)
+    for line in range(0,df2.shape[0]):
+        ox=0
+        oy=0.1
+        px=df2[x].iloc[line]
+        py=df2[y].iloc[line]
+        ty=px
+        tx=px
+
+        # if line % 3 == 0:
+        #     ox = 0.5
+        #     oy = 0.75
+        # elif line % 3 == 1:
+        #     ox = 0.5
+        #     oy = 1.25
+        # elif line % 3 == 2:
+        #     ox = 0.5
+        #     oy = 1.75
+        # else:
+        #     ox = 1.0
+        #     oy = 0
+
+        # if (py < px) and (px-py < 0.5):
+        #     ox = -0.5
+        #     oy = oy*-1
+        #     # py=px
+
+        if py+oy > 12.2: 
+            oy = 0.3
+            ox = 0.5
+
+        plt.annotate(df2[z].iloc[line], 
+            xy=(tx, ty), 
+            xytext=(px-ox, py+oy), 
+            horizontalalignment='center', verticalalignment='bottom', size=8, color='black', weight='light',
+            arrowprops={"arrowstyle":"->, widthA=.5, widthB=.5", "color":"gray", "alpha":0.4})
 
 
     return fig
 
 
 def plot_swarm(df, x, y, z):
+    fig = plt.figure(figsize=(16,9))
+
     # fig, ax = plt.subplots(figsize=(10,8)) # figsize=(6, 7)
 
     order_z = list(df.sort_values(by=[z], ascending=True)[z].unique())
-
-
-    g1 = sns.catplot(data=df, x=y, y=y, hue=x, col=z, col_wrap=7, alpha=0.8, sharex=False, sharey=False, kind="strip", jitter=False, height=5, aspect=1.25, ci=None)
-    # plt.xticks(rotation=90)
-
-    # ax1 = g1.axes[0]
-
-    # g1.set(ylim=(0,None), xlim=(0,None))
-
-    for ax in g1.axes.flatten():
-        ax.axline((0,0), slope=1, color='silver', lw=1, ls='--', label='_none_')
-        ax.tick_params(labelbottom=True, labelleft=True)
-
-        ax.set(xlim=(0,12))  # x axis starts at 0
-        ax.set(ylim=(0,12))  # y axis starts at 0
+    g1 = sns.scatterplot(data=df, x=y, y=y, ci=None, hue=x, alpha=0.6, s=35, style=z, style_order=order_z)
 
 
 
+    # g1 = sns.catplot(data=df, x=y, y=y, hue=x, col=z, col_wrap=7, alpha=0.8, sharex=False, sharey=False, kind="strip", jitter=False, height=5, aspect=1.25, ci=None)
+    # # plt.xticks(rotation=90)
 
-    return g1
+    # # ax1 = g1.axes[0]
+
+    # # g1.set(ylim=(0,None), xlim=(0,None))
+
+    # for ax in g1.axes.flatten():
+    #     ax.axline((0,0), slope=1, color='silver', lw=1, ls='--', label='_none_')
+    #     ax.tick_params(labelbottom=True, labelleft=True)
+
+    #     ax.set(xlim=(0,12))  # x axis starts at 0
+    #     ax.set(ylim=(0,12))  # y axis starts at 0
+
+
+
+
+    return fig
 
 
 
 # # df_merged.plot(x=NAME_THR, y=NAME_EXP, marker='x', kind='scatter') # scatter plot
 # fig1 = plot_data(df_merged, x=NAME_THR, y=NAME_EXP, z="Material")
-fig2 = plot_swarm(df_tidy, x="Type", y="Density", z="Material")
+fig2 = plot_data(df_merged, x=NAME_THR, y=NAME_EXP, z="Material")
+# fig2 = plot_swarm(df_tidy, x="Type", y="Density", z="Material")
 
 
 # fig1.savefig('plots/plotDensities.png', dpi=200, bbox_inches="tight")
-fig2.savefig('plots/plotDensities-2.png', dpi=300, bbox_inches="tight")
+fig2.savefig('plots/plotDensities-2.png', dpi=200, bbox_inches="tight")
 
 # plt.show()
 
