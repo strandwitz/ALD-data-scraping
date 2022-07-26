@@ -12,11 +12,16 @@ import numpy as np
 import seaborn as sns
 from scipy import stats
 import matplotlib.pyplot as plt
+from matplotlib.ticker import AutoMinorLocator
+import random
 
 
 sheet_id = "1CnYIYPMymwAKaVlElBk4ceNN2RtTxpKIHTzuTRjfY3s"
 sheet_name = "FilmProps"
 url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/gviz/tq?tqx=out:csv&sheet={sheet_name}"
+
+# TODO: option to choose material. Al2O3, TiO2
+
 
 # LOAD DATA
 df = pd.read_csv(url)
@@ -72,13 +77,24 @@ print(df_plot2.groupby(Z)[X].nunique(), "\n")
 
 
 def get_line_plot(df, x, y, z):
-    fig, ax = plt.subplots()
+    # sns.set(style='darkgrid')
+    # sns.set(rc={'axes.facecolor':'aliceblue', 'axes.edgecolor':'grey'})
+    # sns.set(rc={"xtick.bottom" : True, "ytick.left" : True, 
+    #     "xtick.color" : 'silver', "ytick.color" : 'silver'})
+
+
+
+    fig, ax = plt.subplots() # figsize=(6, 7)
+    ax.grid(True, color = '#e8e8e6', linestyle = '--', linewidth = 0.5)
     # ax = fig.add_subplot()
     # ax = sns.lineplot(data=df, x=x, y=y, hue=z, marker="o", ci=None, markersize=4, alpha = 0.9, linestyle='')
     # sns.lineplot(data=df, x=x, y=y, ax=ax, sort=False, hue=z, dashes=False, alpha=0.3, legend=False, ci=None)
+    order_z = list(df.sort_values(by=[Z], ascending=True)[Z].unique())
+    # random.Random(2).shuffle(order_z)
+    print(order_z)
 
-    g1 = sns.scatterplot(ax=ax, data=df, x=x, y=y, hue=z, alpha=0.6, s=20, style=z)
-    g2 = sns.lineplot(ax=ax, data=df, x=x, y=y, hue=z, alpha=0.4, ci=None, legend=False)
+    g2 = sns.lineplot(ax=ax, data=df, x=x, y=y, hue=z, alpha=0.4, lw=1, ci=None, legend=False, hue_order=order_z)
+    g1 = sns.scatterplot(ax=ax, data=df, x=x, y=y, hue=z, alpha=0.7, s=25, style=z, hue_order=order_z, style_order=order_z)
 
     # SET PLOT TITLE
     plt.title("Density vs Temperature ALD Thin Films")
@@ -98,6 +114,10 @@ def get_line_plot(df, x, y, z):
     plt.legend(title=f"{z}s", loc=2, bbox_to_anchor=(1.01, 1));
 
 
+    ax.xaxis.set_minor_locator(AutoMinorLocator(5))
+    ax.yaxis.set_major_locator(plt.MultipleLocator(1))
+    ax.yaxis.set_minor_locator(AutoMinorLocator(5))
+
     return fig
 
 def get_fit_plot(df, x, y, z):
@@ -113,7 +133,8 @@ def get_fit_plot(df, x, y, z):
     # sns.scatterplot(data=df, x=X, y=Y, hue=Z) # scatter plot coloured by material
     # sns.regplot(data=df, x=X, y=Y, ci=None) # scatter plot with linear regression
     
-    fig = sns.lmplot(data=df, x=x, y=y, hue=z, ci=None, scatter_kws={"s": 10, "alpha":0.6}, line_kws={"lw":1.25, "alpha":0.5}) # scatter plot with linear regression for each category Z 
+    # TODO share axes off
+    fig = sns.lmplot(data=df, x=x, y=y, hue=z, col=z, col_wrap=4, ci=None, scatter_kws={"s": 20, "alpha":0.7}, line_kws={"lw":1.25, "alpha":0.5}) # scatter plot with linear regression for each category Z 
     # splot2 = sns.lmplot(data=df_plot, x=X, y=Y, hue=Z, ci=None, fit_reg=False, scatter_kws={"s": 10, "alpha":0.4}) # scatter plot with linear regression for each category Z 
     # splot2 = sns.lineplot(data=df_plot, x=X, y=Y, hue=Z, marker="o")
 
