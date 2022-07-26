@@ -20,6 +20,9 @@ sheet_id = "1CnYIYPMymwAKaVlElBk4ceNN2RtTxpKIHTzuTRjfY3s"
 sheet_name = "FilmProps"
 url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/gviz/tq?tqx=out:csv&sheet={sheet_name}"
 
+# TODO: option to choose material. Al2O3, TiO2
+
+
 # LOAD DATA
 df = pd.read_csv(url)
 
@@ -130,7 +133,8 @@ def get_fit_plot(df, x, y, z):
     # sns.scatterplot(data=df, x=X, y=Y, hue=Z) # scatter plot coloured by material
     # sns.regplot(data=df, x=X, y=Y, ci=None) # scatter plot with linear regression
     
-    fig = sns.lmplot(data=df, x=x, y=y, hue=z, ci=None, scatter_kws={"s": 10, "alpha":0.6}, line_kws={"lw":1.25, "alpha":0.5}) # scatter plot with linear regression for each category Z 
+    # TODO share axes off
+    fig = sns.lmplot(data=df, x=x, y=y, hue=z, col=z, col_wrap=4, ci=None, scatter_kws={"s": 20, "alpha":0.7}, line_kws={"lw":1.25, "alpha":0.5}) # scatter plot with linear regression for each category Z 
     # splot2 = sns.lmplot(data=df_plot, x=X, y=Y, hue=Z, ci=None, fit_reg=False, scatter_kws={"s": 10, "alpha":0.4}) # scatter plot with linear regression for each category Z 
     # splot2 = sns.lineplot(data=df_plot, x=X, y=Y, hue=Z, marker="o")
 
