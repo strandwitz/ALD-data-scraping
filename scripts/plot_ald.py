@@ -122,6 +122,7 @@ def get_line_plot(df, x, y, z):
 
 def get_fit_plot(df, x, y, z):
     # plot
+    print(df.info())
 
     # PLOT
     # fig1, ax1 = plt.subplots()
@@ -133,8 +134,13 @@ def get_fit_plot(df, x, y, z):
     # sns.scatterplot(data=df, x=X, y=Y, hue=Z) # scatter plot coloured by material
     # sns.regplot(data=df, x=X, y=Y, ci=None) # scatter plot with linear regression
     
-    # TODO share axes off
-    fig = sns.lmplot(data=df, x=x, y=y, hue=z, col=z, col_wrap=4, ci=None, scatter_kws={"s": 20, "alpha":0.7}, line_kws={"lw":1.25, "alpha":0.5}) # scatter plot with linear regression for each category Z 
+    
+    # scatter plot with linear regression for each category Z 
+    fig = sns.lmplot(data=df, x=x, y=y, hue="PEALD?", markers=["^", "v"], col=z, col_wrap=4, ci=None, 
+        facet_kws = dict(sharex=False, sharey=False), 
+        scatter_kws={"s": 30, "alpha":0.6}, 
+        line_kws={"lw":1.25, "alpha":0.5})
+    
     # splot2 = sns.lmplot(data=df_plot, x=X, y=Y, hue=Z, ci=None, fit_reg=False, scatter_kws={"s": 10, "alpha":0.4}) # scatter plot with linear regression for each category Z 
     # splot2 = sns.lineplot(data=df_plot, x=X, y=Y, hue=Z, marker="o")
 
@@ -151,6 +157,7 @@ def get_fit_plot(df, x, y, z):
     plt.xlabel("Deposition Temperature (°C)")
     plt.ylabel("Density $(g.cm^{-3})$")
 
+    sns.move_legend(fig, "lower center", bbox_to_anchor=(0.5, 1), ncol=2, frameon=False)
     return fig
 
 fig1 = get_fit_plot(df_plot, X, Y, Z)
