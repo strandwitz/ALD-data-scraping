@@ -321,6 +321,7 @@ def plot_data1(df, x, y, z, point_labels,  **kwargs):
 
         # CREATE LABEL TEXT
         pnt_lbl = ""
+        len_twolines = 0 
         if (type(lbls[1]) is float and np.isnan(lbls[1])):
             # if nan in points_labels set label to material
             pnt_lbl = lbls[0]
@@ -330,13 +331,15 @@ def plot_data1(df, x, y, z, point_labels,  **kwargs):
 
         else:
             lbls = [lbls[0], *lbls[1].split(" ", 1)]
-
-            
+            len_twolines = len(lbls[1]) 
             pnt_lbl = "\n".join(lbls)
 
         nlines = pnt_lbl.count("\n")+1
         oneline = nlines == 1
+        twolines = nlines == 2
         manylines = nlines >= 3
+
+        lg_twolines = len_twolines > 6
 
         # CREATE SECTIONS FOR LABEL PLACEMENT
         mx = 0.055 # 5% margins
@@ -538,12 +541,6 @@ def plot_data1(df, x, y, z, point_labels,  **kwargs):
                     ox *= 2.0
 
 
-
-            y_txt += oy
-            x_txt += ox
-
-
-
         else: # above line
             ox=lvls["md"] * -1
             oy=lvls["md"]
@@ -564,11 +561,6 @@ def plot_data1(df, x, y, z, point_labels,  **kwargs):
                     if line % 4 == 1:
                         ox *= 1.1
                         oy *= 1.75
-
-                if manylines:
-                    ox *= 1.0
-                    oy *= 2.0
-
 
 
             if point_in_margin_yh:
@@ -604,9 +596,88 @@ def plot_data1(df, x, y, z, point_labels,  **kwargs):
                 oy *= 0.65
                 ox *= 0.75
 
-            y_txt += oy
-            x_txt += ox
 
+
+            if manylines:
+                ox=lvls["md"] * -1.2
+                oy=lvls["xlg"] * 2.1
+
+                if line % 3 == 0:
+                    ox *= 2.0
+                    oy *= 1.3
+                elif line % 3 == 1:
+                    ox *= 0.8
+                    oy *= 1.1
+                elif line % 3 == 2:
+                    ox *= 1.7
+                    oy *= 1.0
+
+            elif lg_twolines:
+                ox=lvls["md"] * -1.1
+                oy=lvls["xlg"] * 1.8
+
+
+                if line % 3 == 0:
+                    ox *= 1.3
+                    oy *= 0.4
+                elif line % 3 == 1:
+                    ox *= 1.0
+                    oy *= 0.8
+                elif line % 3 == 2:
+                    ox *= 0.55
+                    oy *= 0.55
+
+                    if line % 2 == 0:
+                        ox *= 1.8
+                        oy *= 0.8
+                    if line % 2 == 1:
+                        ox *= 1.3
+                        oy *= 1.0
+
+
+            elif twolines and not(lg_twolines):
+                ox=lvls["sm"] * -1.1
+                oy=lvls["md"] * 1
+
+
+                if line % 3 == 0:
+                    ox *= 1.2
+                    oy *= 1.1
+                elif line % 3 == 1:
+                    ox *= 1.0
+                    oy *= 1.3
+                elif line % 3 == 2:
+                    ox *= 1.4
+                    oy *= 1.6
+
+                    if line % 2 == 0:
+                        ox *= 0.8
+                        oy *= 1.3
+                    elif line % 2 == 1:
+                        ox *= 0.8
+                        oy *= 0.8
+
+
+
+            elif oneline:
+                ox=lvls["sm"] * -1
+                oy=lvls["sm"]
+
+
+                if line % 3 == 0:
+                    ox *= 1.5
+                    oy *= 1.6
+                elif line % 3 == 1:
+                    ox *= 1.5
+                    oy *= 0.8
+                elif line % 3 == 2:
+                    ox *= 1.4
+                    oy *= 1.0
+
+
+
+        y_txt += oy
+        x_txt += ox
 
 
         # BRING ANNOTATIONS INSIDE THE MARGINS OF THE PLOT
