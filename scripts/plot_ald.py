@@ -83,10 +83,22 @@ def get_line_plot(df, x, y, z):
     # sns.set(rc={'axes.facecolor':'aliceblue', 'axes.edgecolor':'grey'})
     # sns.set(rc={"xtick.bottom" : True, "ytick.left" : True, 
     #     "xtick.color" : 'silver', "ytick.color" : 'silver'})
+    sns.reset_orig()
+
+    SMALL_SIZE = 12
+    MEDIUM_SIZE = 14
+    BIGGER_SIZE = 16
+
+    plt.rc('font', size=SMALL_SIZE)          # controls default text sizes
+    plt.rc('axes', titlesize=SMALL_SIZE)     # fontsize of the axes title
+    plt.rc('axes', labelsize=MEDIUM_SIZE)    # fontsize of the x and y labels
+    plt.rc('xtick', labelsize=SMALL_SIZE)    # fontsize of the tick labels
+    plt.rc('ytick', labelsize=SMALL_SIZE)    # fontsize of the tick labels
+    plt.rc('legend', fontsize=SMALL_SIZE)    # legend fontsize
+    plt.rc('figure', titlesize=BIGGER_SIZE)  # fontsize of the figure title
 
 
-
-    fig, ax = plt.subplots() # figsize=(6, 7)
+    fig, ax = plt.subplots(figsize=(8.5,11)) # figsize=(6, 7)
     ax.grid(True, color = '#e8e8e6', linestyle = '--', linewidth = 0.5)
     # ax = fig.add_subplot()
     # ax = sns.lineplot(data=df, x=x, y=y, hue=z, marker="o", ci=None, markersize=4, alpha = 0.9, linestyle='')
@@ -96,7 +108,7 @@ def get_line_plot(df, x, y, z):
     print(order_z)
 
     g2 = sns.lineplot(ax=ax, data=df, x=x, y=y, hue=z, alpha=0.4, lw=1, ci=None, legend=False, hue_order=order_z)
-    g1 = sns.scatterplot(ax=ax, data=df, x=x, y=y, hue=z, alpha=0.7, s=25, style=z, hue_order=order_z, style_order=order_z)
+    g1 = sns.scatterplot(ax=ax, data=df, x=x, y=y, hue=z, alpha=0.7, s=35, style=z, hue_order=order_z, style_order=order_z)
 
     # SET PLOT TITLE
     plt.title("Density vs Temperature ALD Thin Films")
@@ -137,7 +149,7 @@ def get_fit_plot(df, x, y, z):
     # sns.regplot(data=df, x=X, y=Y, ci=None) # scatter plot with linear regression
     
     
-    sns.set(font_scale = 1.50) # BUG: breaks the other graph font size
+    sns.set(font_scale = 1.50)
 
     # scatter plot with linear regression for each category Z 
     fig = sns.lmplot(data=df, x=x, y=y, hue="PEALD?", markers=["^", "v"], col=z, col_wrap=4, ci=None, 
@@ -170,7 +182,7 @@ def get_fit_plot(df, x, y, z):
     sns.move_legend(fig, "lower center", bbox_to_anchor=(0.5, 1), ncol=2, frameon=False)
 
     # customize plot spacing and padding
-    plt.subplots_adjust(wspace = 0.175, hspace=0.2)
+    plt.subplots_adjust(wspace = 0.19, hspace=0.2)
     # plt.tight_layout()
     return fig
 
@@ -181,6 +193,6 @@ fig2 = get_line_plot(df_plot2, X, Y, Z)
 # plt.show()
 
 # bbox_inches stops title from being cut off in the plot
-fig1.savefig('plots/plot1.png', dpi=150, bbox_inches="tight")
-fig2.savefig('plots/plot2.png', dpi=150, bbox_inches="tight")
+fig1.savefig('plots/plot1.png', dpi=200, bbox_inches="tight")
+fig2.savefig('plots/plot2.png', dpi=300, bbox_inches="tight")
 # splot2.savefig('plots/plot4.png', dpi=150, bbox_inches="tight")
