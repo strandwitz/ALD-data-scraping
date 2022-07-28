@@ -16,6 +16,8 @@ from matplotlib.ticker import AutoMinorLocator
 import random
 
 
+
+
 sheet_id = "1CnYIYPMymwAKaVlElBk4ceNN2RtTxpKIHTzuTRjfY3s"
 sheet_name = "FilmProps"
 url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/gviz/tq?tqx=out:csv&sheet={sheet_name}"
@@ -135,11 +137,15 @@ def get_fit_plot(df, x, y, z):
     # sns.regplot(data=df, x=X, y=Y, ci=None) # scatter plot with linear regression
     
     
+    sns.set(font_scale = 1.40)
+
     # scatter plot with linear regression for each category Z 
     fig = sns.lmplot(data=df, x=x, y=y, hue="PEALD?", markers=["^", "v"], col=z, col_wrap=4, ci=None, 
         facet_kws = dict(sharex=False, sharey=False), 
-        scatter_kws={"s": 30, "alpha":0.6}, 
-        line_kws={"lw":1.25, "alpha":0.5})
+        scatter_kws={"s": 45, "alpha":0.7}, 
+        line_kws={"lw":1.5, "alpha":0.5})
+
+    fig.set_titles(col_template="{col_name}")
     
     # splot2 = sns.lmplot(data=df_plot, x=X, y=Y, hue=Z, ci=None, fit_reg=False, scatter_kws={"s": 10, "alpha":0.4}) # scatter plot with linear regression for each category Z 
     # splot2 = sns.lineplot(data=df_plot, x=X, y=Y, hue=Z, marker="o")
@@ -151,11 +157,11 @@ def get_fit_plot(df, x, y, z):
     # # sfig2 = splot2.get_figure()
 
     # SET PLOT TITLE
-    plt.title("Density vs Temperature ALD Thin Films")
+    # plt.title("Density vs Temperature ALD Thin Films")
 
     # SET AXIS LABELS
-    plt.xlabel("Deposition Temperature (°C)")
-    plt.ylabel("Density $(g.cm^{-3})$")
+    # plt.xlabel("Deposition Temperature (°C)")
+    # plt.ylabel("Density $(g.cm^{-3})$")
 
     sns.move_legend(fig, "lower center", bbox_to_anchor=(0.5, 1), ncol=2, frameon=False)
     return fig
