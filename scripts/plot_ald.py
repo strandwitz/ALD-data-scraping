@@ -12,7 +12,7 @@ import numpy as np
 import seaborn as sns
 from scipy import stats
 import matplotlib.pyplot as plt
-from matplotlib.ticker import AutoMinorLocator
+from matplotlib.ticker import AutoMinorLocator, FuncFormatter
 import random
 
 
@@ -137,7 +137,7 @@ def get_fit_plot(df, x, y, z):
     # sns.regplot(data=df, x=X, y=Y, ci=None) # scatter plot with linear regression
     
     
-    sns.set(font_scale = 1.40)
+    sns.set(font_scale = 1.50)
 
     # scatter plot with linear regression for each category Z 
     fig = sns.lmplot(data=df, x=x, y=y, hue="PEALD?", markers=["^", "v"], col=z, col_wrap=4, ci=None, 
@@ -146,6 +146,11 @@ def get_fit_plot(df, x, y, z):
         line_kws={"lw":1.5, "alpha":0.5})
 
     fig.set_titles(col_template="{col_name}")
+
+    # TODO: fix axis sigfigs
+
+    for ax in fig.axes.flat:
+        ax.yaxis.set_major_formatter(FuncFormatter(lambda y, p: f'{y:.2f}'))
     
     # splot2 = sns.lmplot(data=df_plot, x=X, y=Y, hue=Z, ci=None, fit_reg=False, scatter_kws={"s": 10, "alpha":0.4}) # scatter plot with linear regression for each category Z 
     # splot2 = sns.lineplot(data=df_plot, x=X, y=Y, hue=Z, marker="o")
