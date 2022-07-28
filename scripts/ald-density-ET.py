@@ -169,10 +169,14 @@ def create_latex_labels(label):
         new_label.append(nlbl)
 
     label = " ".join(new_label)
+    label = label.strip()
+    label = rf'{label}'
     return label
 
-
-# print(create_latex_labels("NiO"))
+# test fucntion
+# print("*"*40,create_latex_labels("NiO"))
+# print("*"*40,create_latex_labels("Al2O3"))
+# print("*"*40,create_latex_labels(r"Al_{2}O_{3}"))
 
 # PLOT
 
@@ -282,6 +286,10 @@ def plot_data1(df, x, y, z, point_labels,  **kwargs):
 
     order_z = list(df[z].unique())
 
+    # formated_labels = df[z].apply(create_latex_labels)
+    # print(formated_labels)
+    # print(df[z].value_counts())
+
     ax.axline((0,0), slope=1, color='silver', lw=1, ls='--', alpha=0.5, label='_none_')
     g1 = sns.scatterplot(ax=ax, data=df, x=x, y=y, hue=z, alpha=0.6, s=35, style=z, hue_order=order_z, style_order=order_z)
     g2 = sns.scatterplot(ax=ax, data=df, x=x, y=x, color="black", alpha=0.9, s=15, marker="+")
@@ -295,6 +303,8 @@ def plot_data1(df, x, y, z, point_labels,  **kwargs):
     ax.set_xlabel(" ".join([x, kwargs.get('units')]))
     ax.set_ylabel(" ".join([y, kwargs.get('units')]))
 
+
+    # PLOT LABELS
     df_lbls = df.loc[:, [x, y, *point_labels]]
     df_lbls.sort_values(by=[x,y], ascending=True, inplace=True)
     df_lbls.drop_duplicates(subset=[x, z], keep='last', inplace=True)
@@ -819,7 +829,15 @@ def plot_data1(df, x, y, z, point_labels,  **kwargs):
     #     autoalign='y', avoid_points=False, avoid_self=False,
     #     only_move={'points':'', 'text':'xy', 'objects':''})
     
-    sns.move_legend(ax, "upper left", bbox_to_anchor=(1, 1))
+
+    # LEGEND
+    handles, labels  =  ax.get_legend_handles_labels()
+    # labels = g1._legend.texts
+    print(len(labels))
+    print(len(handles))
+    labels = [create_latex_labels(l) for l in labels]
+    ax.legend(handles, labels)
+    sns.move_legend(ax, "upper left", bbox_to_anchor=(1, 1), ncol=2)
 
     return fig
 
