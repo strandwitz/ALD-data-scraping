@@ -137,7 +137,7 @@ def get_fit_plot(df, x, y, z):
     # sns.regplot(data=df, x=X, y=Y, ci=None) # scatter plot with linear regression
     
     
-    sns.set(font_scale = 1.50)
+    sns.set(font_scale = 1.50) # BUG: breaks the other graph font size
 
     # scatter plot with linear regression for each category Z 
     fig = sns.lmplot(data=df, x=x, y=y, hue="PEALD?", markers=["^", "v"], col=z, col_wrap=4, ci=None, 
@@ -145,12 +145,6 @@ def get_fit_plot(df, x, y, z):
         scatter_kws={"s": 45, "alpha":0.7}, 
         line_kws={"lw":1.5, "alpha":0.5})
 
-    fig.set_titles(col_template="{col_name}")
-
-    # TODO: fix axis sigfigs
-
-    for ax in fig.axes.flat:
-        ax.yaxis.set_major_formatter(FuncFormatter(lambda y, p: f'{y:.2f}'))
     
     # splot2 = sns.lmplot(data=df_plot, x=X, y=Y, hue=Z, ci=None, fit_reg=False, scatter_kws={"s": 10, "alpha":0.4}) # scatter plot with linear regression for each category Z 
     # splot2 = sns.lineplot(data=df_plot, x=X, y=Y, hue=Z, marker="o")
@@ -162,13 +156,22 @@ def get_fit_plot(df, x, y, z):
     # # sfig2 = splot2.get_figure()
 
     # SET PLOT TITLE
-    # plt.title("Density vs Temperature ALD Thin Films")
+    #  set title of each subplot to col value
+    fig.set_titles(col_template="{col_name}")
+
+    # fix y axis sigfigs
+    for ax in fig.axes.flat:
+        ax.yaxis.set_major_formatter(FuncFormatter(lambda y, p: f'{y:.2f}'))
 
     # SET AXIS LABELS
-    # plt.xlabel("Deposition Temperature (°C)")
-    # plt.ylabel("Density $(g.cm^{-3})$")
+    fig.set_axis_labels( "Deposition Temperature (°C)", "Density $(g.cm^{-3})$" )
 
+    # CUSTOMIZE LEGEND
     sns.move_legend(fig, "lower center", bbox_to_anchor=(0.5, 1), ncol=2, frameon=False)
+
+    # customize plot spacing and padding
+    plt.subplots_adjust(wspace = 0.175, hspace=0.2)
+    # plt.tight_layout()
     return fig
 
 fig1 = get_fit_plot(df_plot, X, Y, Z)
