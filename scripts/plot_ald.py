@@ -14,6 +14,7 @@ from scipy import stats
 import matplotlib.pyplot as plt
 from matplotlib.ticker import AutoMinorLocator, FuncFormatter
 import random
+import re
 
 
 
@@ -78,6 +79,25 @@ print(df_plot2[Z].value_counts(), "\n")
 print(df_plot2.groupby(Z)[X].nunique(), "\n")
 
 
+def create_latex_labels(label):
+    if type(label) is float and np.isnan(label):
+        return label
+
+    label = str(label)
+    lbls = label.split(" ", 1)
+    new_label = []
+    for lbl in lbls:
+        lbl = str(lbl)
+        nlbl =  re.sub(r'([a-zA-Z])(\d+)', r'\1_{\2}',lbl)
+        nlbl = lbl if (lbl==nlbl) else f"${nlbl}$"
+        new_label.append(nlbl)
+
+    label = " ".join(new_label)
+    label = label.strip()
+    label = rf'{label}'
+    return label
+
+
 def get_line_plot(df, x, y, z):
     # sns.set(style='darkgrid')
     # sns.set(rc={'axes.facecolor':'aliceblue', 'axes.edgecolor':'grey'})
@@ -125,7 +145,11 @@ def get_line_plot(df, x, y, z):
     # for label, df_g in df.groupby(z):
     #     df_g.vals.plot(kind="kde", ax=ax, label=label)
 
-    plt.legend(title=f"{z}s", loc=2, bbox_to_anchor=(1.01, 1));
+    handles, labels  =  ax.get_legend_handles_labels() # get legend text  
+    labels = [create_latex_labels(l) for l in labels] # Al2O3 --> $Al_{2}O_{3}$
+    ax.legend(handles, labels) # set modified labels
+
+    sns.move_legend(ax, title=f"{z}s", loc=2, bbox_to_anchor=(1.01, 1));
 
 
     ax.xaxis.set_minor_locator(AutoMinorLocator(5))
