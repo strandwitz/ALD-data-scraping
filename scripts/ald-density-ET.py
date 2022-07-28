@@ -397,8 +397,17 @@ def plot_data1(df, x, y, z, point_labels,  **kwargs):
         xlim_l = ax.get_xlim()[0] + (x_margin_l)
         xlim_h = ax.get_xlim()[1] - (x_margin_h)
         
-        sec_x1 = delta_x / 3.0
+        num_sections = 6.0
+        sec_x1 = delta_x / num_sections
         sec_x2 = ax.get_xlim()[1] - sec_x1
+
+        sections = [sec_x1 * i for i in range(0,int(num_sections)+1)]
+        point_in_section_more = [x_thr > x for x in sections]
+        point_section = point_in_section_more.count(True)
+        # print(sections)
+        # print(x_thr)
+        # print(point_in_section_more)
+        # print(point_section)
 
         # print("sections ", sec_x1, sec_x2)
 
@@ -424,101 +433,197 @@ def plot_data1(df, x, y, z, point_labels,  **kwargs):
                 ox = 8.5
                 oy = -0.5
 
-                if seq_lbl_lines % 5 == 1:
-                    ox *= 1.70
-                    oy *= 4.75
-                elif seq_lbl_lines % 5 == 2:
-                    ox *= 1.85
-                    oy *= 2.25
-                elif seq_lbl_lines % 5 == 3:
-                    ox *= 1.75
-                    oy *= -0.40
-                elif seq_lbl_lines % 5 == 4:
-                    ox *= 1.65
-                    oy *= -0.25
-                elif seq_lbl_lines % 5 == 0: # NONE
-                    ox *= 1.0
-                    oy *= 1.0
+                if point_section == 1:
+                    ox = 4.5
+                    oy = -6.0
+                if point_section == 2:
+                    ox = 7.0
+                    oy = -6.0
+
+                    if seq_lbl_lines % 2 == 1:
+                        ox = 9.0
+                        oy = -4.0
+
+                if point_section == 3:
+                    # ox = 6.0
+                    oy = 2.0
+                if point_section == 4: pass
+                    # ox = 6.0
+                    # oy = -3.0
+
+
+                # if seq_lbl_lines % 5 == 1:
+                #     ox *= 1.70
+                #     oy *= 4.75
+                # elif seq_lbl_lines % 5 == 2:
+                #     ox *= 1.85
+                #     oy *= 2.25
+                # elif seq_lbl_lines % 5 == 3:
+                #     ox *= 1.75
+                #     oy *= -0.40
+                # elif seq_lbl_lines % 5 == 4:
+                #     ox *= 1.65
+                #     oy *= -0.25
+                # elif seq_lbl_lines % 5 == 0: # NONE
+                #     ox *= 1.0
+                #     oy *= 1.0
 
 
             elif lg_twolines:
                 ox = 8.0
                 oy = -1.5
 
-                if seq_lbl_lines % 5 == 1: # 1
-                    ox *= 1.0
-                    oy *= 1.25
+
+                if point_section == 1:
+                    ox = 3.0
+                    oy = -2.0
 
                     if seq_lbl_lines % 2 == 1:
-                        oy *= -0.50
-                    else:
-                        oy *= 0.75
+                        oy = -3.0
 
-                if seq_lbl_lines % 5 == 2: # 2
-                    ox *= 1.50
-                    oy *= -0.45
+                elif point_section == 2:
+                    ox = 4.75
+                    oy = -2.5
 
-                if seq_lbl_lines % 5 == 3: # 3
-                    ox *= 1.40
-                    oy *= 1.25
+                    if seq_lbl_lines % 3 == 1:
+                        ox = 7.0
+                        oy = -3.5
 
-                    if seq_lbl_lines % 2 == 0:
-                        ox *= 0.95
-                        oy *= 0.05
-                    if seq_lbl_lines % 2 == 1:
-                        ox *= 0.85
-                        oy *= -0.50
+                elif point_section == 3:
+                    ox = 5.0
+                    oy = 1.5
 
-                if seq_lbl_lines % 5 == 4:
-                    ox *= 1.25
-                    oy *= -0.15
+                elif point_section == 4:
+                    ox = 3.0
+                    oy = 1.25
 
-                if seq_lbl_lines % 5 == 0:
-                    ox *= 0.95
-                    oy *= 0.25
+           
+
+                # if seq_lbl_lines % 5 == 1: # 1
+                #     ox *= 1.0
+                #     oy *= 0.75
+
+                #     if seq_lbl_lines % 2 == 1:
+                #         oy *= -0.50
+                #     else:
+                #         oy *= 0.75
+
+                # if seq_lbl_lines % 5 == 2: # 2
+                #     ox *= 1.3
+                #     oy *= -0.40
+
+                # if seq_lbl_lines % 5 == 3: # 3
+                #     ox *= 1.6
+                #     oy *= 0.6
+
+                #     if seq_lbl_lines % 2 == 0:
+                #         ox *= 0.95
+                #         oy *= 0.05
+                #     if seq_lbl_lines % 2 == 1:
+                #         ox *= 0.85
+                #         oy *= -0.50
+
+                # if seq_lbl_lines % 5 == 4: # 4
+                #     ox *= 1.25
+                #     oy *= -0.15
+
+                # if seq_lbl_lines % 5 == 0: # 0
+                #     ox *= 0.95
+                #     oy *= 0.25
+
+
+
 
             elif twolines and not(lg_twolines):
-                # print("-"*20,seq_lbl_lines)
+                print("-"*30,seq_lbl_lines, seq_lbl_lines % 5)
 
                 ox = 5.5
                 oy = 1.0
 
+                if point_section == 1:
+                    ox = 1.2
+                    oy = -1.0
+                elif point_section == 2:
+                    ox = 2.75
+                    oy = -0.5
 
-                if seq_lbl_lines % 5 == 1:
-                    ox *= 1.2
-                    oy *= 1.5
+                    if seq_lbl_lines % 3 == 1:
+                        ox = 1.05
+                        oy = -0.5
+                    elif seq_lbl_lines % 3 == 2:
+                        ox = 4.1
+                        oy = -1.75
 
-                if seq_lbl_lines % 5 == 2:
-                    ox *= 1.3
-                    oy *= 0.5
+                elif point_section == 3:
+                    ox = 3.0
+                    oy = 0.25
 
-                if seq_lbl_lines % 5 == 3:
-                    ox *= 1.4
-                    oy *= 0.2
+                    if seq_lbl_lines % 2 == 1:
+                        ox = 5.0
 
-                if seq_lbl_lines % 5 == 4:
-                    ox *= 0.65
-                    oy *= 0.90
+                elif point_section == 4:
+                    ox = 2.75
+                    oy = 0.25
 
-                if seq_lbl_lines % 5 == 0:
-                    ox *= 1.0
-                    oy *= 1.0
+                # if seq_lbl_lines % 5 == 1:
+                #     ox *= 1.2
+                #     oy *= 1.75
+
+                # if seq_lbl_lines % 5 == 2:
+                #     ox *= 1.3
+                #     oy *= 0.5
+
+                # if seq_lbl_lines % 5 == 3:
+                #     ox *= 1.4
+                #     oy *= 0.2
+
+                # if seq_lbl_lines % 5 == 4:
+                #     ox *= 0.65
+                #     oy *= 0.90
+
+                # if seq_lbl_lines % 5 == 0:
+                #     ox *= 1.0
+                #     oy *= 0.9
+
+
+
 
             elif oneline:
-                ox = -0.05
-                oy = -1.6
+                ox = 0.1
+                oy = -1.3
 
-                if seq_lbl_lines % 3 == 0:
-                    ox *= 1.0
-                    oy *= 1.35
 
-                if seq_lbl_lines % 3 == 1:
-                    ox *= 1.0
-                    oy *= 1.45
+                if point_section == 1: pass # no points as of 2022-07-28
+                if point_section == 2:
+                    ox = 0.25
+                    oy = -1.25
 
-                if seq_lbl_lines % 3 == 2:
+                    if seq_lbl_lines % 3 == 1:
+                        ox = 0.6
+                        oy = -1.0
+                    if seq_lbl_lines % 3 == 2:
+                        ox = 2.6
+                        oy = -0.73
+
+                if point_section == 3:
                     ox = 1.0
-                    oy *= -0.5
+                    oy = 0.7
+                if point_section == 4:
+                    ox = 0.1
+                    oy = 0.5
+
+                # if seq_lbl_lines % 3 == 0:
+                #     ox *= 1.0
+                #     oy *= 1.35
+
+                # if seq_lbl_lines % 3 == 1:
+                #     ox *= 1.0
+                #     oy *= 1.45
+
+                # if seq_lbl_lines % 3 == 2:
+                #     ox = 1.0
+                #     oy *= -0.5
+
 
             if point_in_margin_yl:
                 print(f"MARGIN / Y L {pnt_lbl}\n")
@@ -731,7 +836,7 @@ def plot_data1(df, x, y, z, point_labels,  **kwargs):
                         oy *= 0.8
 
             elif oneline:
-                print("-"*30,seq_lbl_lines, seq_lbl_lines % 5)
+                # print("-"*30,seq_lbl_lines, seq_lbl_lines % 5)
 
                 ox=lvls["sm"] * -1
                 oy=lvls["sm"]
