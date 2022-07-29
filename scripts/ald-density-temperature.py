@@ -66,6 +66,7 @@ print(df_material.info())
 # PLOT
 
 def plot_data(df, x, y, hue, **kwargs):
+    cl="darkslateblue"
 
     fig = sns.lmplot(data=df, x=x, y=y, 
         hue=hue, hue_order=[True, False], markers=["^", "v"], palette=["orangered", "navy"],
@@ -74,10 +75,33 @@ def plot_data(df, x, y, hue, **kwargs):
         line_kws={"lw":1.5, "alpha":0.5})
 
     sns.regplot(data=df, x=x, y=y, scatter=False, ci=None, 
-        line_kws={"lw":1.5, "alpha":0.7, "color":"darkslateblue"}).set(title=daz.create_latex_labels(kwargs.get("title")))
+        line_kws={"lw":1.5, "alpha":0.7, "color":cl}).set(title=daz.create_latex_labels(kwargs.get("title")))
 
     return fig
 
+def plot_data2(df, x, y, hue, **kwargs):
+    c1="darkslateblue"
+    c2="darkslateblue"
+
+    g = sns.FacetGrid(
+        data=df,
+        hue=hue, hue_order=[True, False],
+        height=4, aspect=1.25,
+        hue_kws={"edgecolor": [c1,c2], 'facecolor':["none", c2], "markers":["^", "v"]},
+    )
+    g.map(sns.scatterplot, x, y, linewidth=1.5, alpha=1)
+    g.add_legend()
+
+
+    sns.regplot(data=df, x=x, y=y, scatter=False, ci=None, 
+        line_kws={"lw":1.5, "alpha":0.9, "color":c2}).set(title=daz.create_latex_labels(kwargs.get("title")))
+
+
+    return g
 
 fig = plot_data(df_material, x=x_tdep, y=y_density, hue="PEALD?", title=INPUT_MATERIAL)
 fig.savefig('plots/plot4.png', dpi=300, bbox_inches="tight")
+
+
+fig2 = plot_data2(df_material, x=x_tdep, y=y_density, hue="PEALD?", title=INPUT_MATERIAL)
+fig2.savefig('plots/plot5.png', dpi=300, bbox_inches="tight")
