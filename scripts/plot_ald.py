@@ -101,9 +101,9 @@ def get_line_plot(df, x, y, z):
     #     "xtick.color" : 'silver', "ytick.color" : 'silver'})
     sns.reset_orig()
 
-    SMALL_SIZE = 12
-    MEDIUM_SIZE = 14
-    BIGGER_SIZE = 16
+    SMALL_SIZE = 14
+    MEDIUM_SIZE = 16
+    BIGGER_SIZE = 18
 
     plt.rc('font', size=SMALL_SIZE)          # controls default text sizes
     plt.rc('axes', titlesize=SMALL_SIZE)     # fontsize of the axes title
@@ -168,22 +168,23 @@ def get_fit_plot(df, x, y, z, hue):
     # sns.scatterplot(data=df, x=X, y=Y, hue=Z) # scatter plot coloured by material
     # sns.regplot(data=df, x=X, y=Y, ci=None) # scatter plot with linear regression
     
-    
+    sns.reset_orig()
     # sns.set(font_scale = 1.50)
     df_plot = df.loc[:,[x,y,z,hue]]
 
     df_plot[z] = df_plot[z].apply(daz.create_latex_labels)
 
-    SMALL_SIZE = 16
-    MEDIUM_SIZE = 18
-    BIGGER_SIZE = 20
+    SMALL_SIZE = 22
+    MEDIUM_SIZE = 26
+    BIGGER_SIZE = 28
 
     plt.rc('font', size=SMALL_SIZE)          # controls default text sizes
     plt.rc('axes', titlesize=SMALL_SIZE)     # fontsize of the axes title
-    plt.rc('axes', labelsize=MEDIUM_SIZE)    # fontsize of the x and y labels
+    plt.rc('axes', labelsize=SMALL_SIZE)    # fontsize of the x and y labels
     plt.rc('xtick', labelsize=SMALL_SIZE)    # fontsize of the tick labels
     plt.rc('ytick', labelsize=SMALL_SIZE)    # fontsize of the tick labels
     plt.rc('legend', fontsize=SMALL_SIZE)    # legend fontsize
+    # plt.rc('legend', titlesize=MEDIUM_SIZE)    # legend fontsize
     plt.rc('figure', titlesize=BIGGER_SIZE)  # fontsize of the figure title
 
 
@@ -191,8 +192,8 @@ def get_fit_plot(df, x, y, z, hue):
     fig = sns.lmplot(data=df_plot, x=x, y=y, col=z, col_wrap=4, ci=None, 
         hue=hue, hue_order=[True, False], markers=["^", "v"], palette=["orangered", "navy"],
         facet_kws = dict(sharex=False, sharey=False), 
-        scatter_kws={"s": 70, "alpha":0.5}, 
-        line_kws={"lw":1.5, "alpha":0.5})
+        scatter_kws={"s": 80, "alpha":0.5}, 
+        line_kws={"lw":2.5, "alpha":0.5})
 
     
     # splot2 = sns.lmplot(data=df_plot, x=X, y=Y, hue=Z, ci=None, fit_reg=False, scatter_kws={"s": 10, "alpha":0.4}) # scatter plot with linear regression for each category Z 
@@ -206,6 +207,7 @@ def get_fit_plot(df, x, y, z, hue):
 
     # SET PLOT TITLE
     #  set title of each subplot to col value
+    # TODO: figure out how to change the fontsize
     fig.set_titles(col_template="{col_name}")
 
     # fix y axis sigfigs
@@ -219,7 +221,7 @@ def get_fit_plot(df, x, y, z, hue):
     sns.move_legend(fig, "lower center", bbox_to_anchor=(0.5, 1), ncol=2, frameon=False)
 
     # customize plot spacing and padding
-    plt.subplots_adjust(wspace = 0.19, hspace=0.2)
+    plt.subplots_adjust(wspace = 0.19, hspace=0.3)
     # plt.tight_layout()
     return fig
 
