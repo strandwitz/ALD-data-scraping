@@ -11,7 +11,8 @@ import seaborn as sns
 from scipy import stats
 import matplotlib.pyplot as plt
 import random
-from adjustText import adjust_text
+# from adjustText import adjust_text # automatic text placement in plots
+import re
 
 sheet_name_exp = "FilmProps"
 sheet_name_thr = "TheorDensity"
@@ -64,8 +65,7 @@ def ald_load_data(urls, view_data=True):
 
 
 data_generator = ald_load_data([url_exp, url_thr], view_data=False)
-df_exp = next(data_generator)
-df_thr = next(data_generator)
+
 
 # GET DATA TO PLOT
 
@@ -84,10 +84,12 @@ def ald_merge_df(df1, df2, key, cols, view_data=True):
 
 
 # PRINT COLUMN NAMES
+df_exp = next(data_generator)
 exp_all_columns = list(df_exp.columns)
 print("EXPERIMENTAL ",exp_all_columns)
 
 
+df_thr = next(data_generator)
 thr_all_columns = list(df_thr.columns)
 print("THEORETICAL ",thr_all_columns)
 
@@ -153,6 +155,28 @@ ald_print_info(df_thr, label="DF THEORETICAL", vc=[False, key])
 ald_print_info(df_merged, label="DF MERGED", vc=[False, key], head=[False, 0], tail=[True, 10])
 
 
+def create_latex_labels(label):
+    if type(label) is float and np.isnan(label):
+        return label
+
+    label = str(label)
+    lbls = label.split(" ", 1)
+    new_label = []
+    for lbl in lbls:
+        lbl = str(lbl)
+        nlbl =  re.sub(r'([a-zA-Z])(\d+)', r'\1_{\2}',lbl)
+        nlbl = lbl if (lbl==nlbl) else f"${nlbl}$"
+        new_label.append(nlbl)
+
+    label = " ".join(new_label)
+    label = label.strip()
+    label = rf'{label}'
+    return label
+
+# test fucntion
+# print("*"*40,create_latex_labels("NiO"))
+# print("*"*40,create_latex_labels("Al2O3"))
+# print("*"*40,create_latex_labels(r"Al_{2}O_{3}"))
 
 
 # PLOT
@@ -219,8 +243,12 @@ def plot_data(df, x, y, z):
             arrowprops={"arrowstyle":"->, widthA=.5, widthB=.5", "color":"gray", "alpha":0.4})
 
 
-    return fig
+    #place legend outside top right corner of plot
+    # plt.legend(bbox_to_anchor=(1.02, 1), loc=2, borderaxespad=0)
+    sns.move_legend(ax, "upper left", bbox_to_anchor=(1, 1))
 
+
+    return fig
 
 def plot_swarm(df, x, y, z):
     fig = plt.figure(figsize=(16,9))
@@ -258,15 +286,15 @@ def plot_data1(df, x, y, z, point_labels,  **kwargs):
 
     order_z = list(df[z].unique())
 
+    # formated_labels = df[z].apply(create_latex_labels)
+    # print(formated_labels)
+    # print(df[z].value_counts())
+
     ax.axline((0,0), slope=1, color='silver', lw=1, ls='--', alpha=0.5, label='_none_')
     g1 = sns.scatterplot(ax=ax, data=df, x=x, y=y, hue=z, alpha=0.6, s=35, style=z, hue_order=order_z, style_order=order_z)
     g2 = sns.scatterplot(ax=ax, data=df, x=x, y=x, color="black", alpha=0.9, s=15, marker="+")
 
-    df_lbls = df.loc[:, [x, y, *point_labels]]
-    df_lbls.sort_values(by=[x,y], ascending=True, inplace=True)
-    df_lbls.drop_duplicates(subset=[x, z], keep='last', inplace=True)
     plt.minorticks_on()
-
 
     # SET TITLE
     plt.title("ALD Thin Film Density")
@@ -275,265 +303,420 @@ def plot_data1(df, x, y, z, point_labels,  **kwargs):
     ax.set_xlabel(" ".join([x, kwargs.get('units')]))
     ax.set_ylabel(" ".join([y, kwargs.get('units')]))
 
-    print(df_lbls.head())
+
+    # PLOT LABELS
+    df_lbls = df.loc[:, [x, y, *point_labels]]
+    df_lbls.sort_values(by=[x,y], ascending=True, inplace=True)
+    df_lbls.drop_duplicates(subset=[x, z], keep='last', inplace=True)
+
+    # df_lbls["tmp"] =  df_lbls[point_labels[1]].str.contains( df_lbls[point_labels[0]], regex=False )
+    df_lbls[point_labels] = df_lbls[point_labels].fillna('')
+    filt_material_in_phase = df_lbls.apply(lambda r: r[point_labels[0]] in r[point_labels[1]], axis=1)
+
+    for lbl_col in point_labels:
+        # print(df_lbls[lbl_col].head())
+        df_lbls[lbl_col] = df_lbls[lbl_col].apply(create_latex_labels)
+    
+    # df_lbls[point_labels[0]] = df_lbls[point_labels[0]].apply(create_latex_labels)
+
+    df_lbls.loc[filt_material_in_phase, ["label"]] = df_lbls[point_labels[1]] # NOTE: may need to split str if phase has multiple annotations
+    df_lbls.loc[~filt_material_in_phase, ["label"]] = df_lbls[point_labels[0]]+"\n"+df_lbls[point_labels[1]].str.replace(r'\s', r'\n', n=1, regex=True)
+    df_lbls["label"] = df_lbls["label"].str.strip()
+    df_lbls["label_lines"] = df_lbls["label"].str.count("\n")+1
+
+    filt_twolines = df_lbls["label_lines"] == 2
+    long_label = 6
+    df_lbls.loc[filt_twolines, ["len_twolines"]] = df_lbls["label"].str.replace(r'.+\n(.+)(?:\n.*)?', r'\1', regex=True).str.len() > long_label
+    df_lbls["len_twolines"] = df_lbls["len_twolines"].fillna(False)
+
+    df_lbls["below_line"] = df_lbls[x] > df_lbls[y]
+    df_lbls["seq_above_below"] = df_lbls.groupby("below_line").cumcount()+1
+    df_lbls["seq_lbl_lines"] = df_lbls.groupby(["below_line", "label_lines", "len_twolines"]).cumcount()+1
+
+    # df_lbls["label"] = df_lbls[point_labels[1]]
+    # else:
+    #     df_lbls["label"] = df_lbls[point_labels[0]]+"\n"+ df_lbls[point_labels[1]].str.replace(r'\s', r'\n', n=1, regex=True)
+
+    print(df_lbls.head(20))
     print(df_lbls.shape)
 
     texts = []
 
     for line in range(0,df_lbls.shape[0]):
-        lbls = list(df_lbls.loc[:,point_labels].iloc[line])
+        # GET X AND Y COORDS 
+        x_thr=df_lbls[x].iloc[line]
+        y_thr=df_lbls[x].iloc[line] # theoretical x and y are the same
+        y_exp=df_lbls[y].iloc[line] # experimental y value
 
-        lvls = {"none":0, "base":1.0,"xsm": 0.01, "sm": 0.5, "md": 1.2, "lg": 2.5, "xlg": 3.6}
-        ox=lvls["sm"]
-        oy=lvls["base"]
+        below_line = df_lbls["below_line"].iloc[line] # boolean
+
+        seq_above_below = df_lbls["seq_above_below"].iloc[line] # sequence above and below line
+        seq_lbl_lines = df_lbls["seq_lbl_lines"].iloc[line] # sequence number of lines
 
 
-        pnt_lbl = ""
-        if (len(lbls) > 1) and (lbls[0] in lbls[1]):
-            pnt_lbl = lbls[1]
+        # GET LABEL TEXT
+        pnt_lbl = df_lbls["label"].iloc[line]
 
-        else:
-            lbls = [lbls[0], *lbls[1].split(" ", 1)]
-            pnt_lbl = "\n".join(lbls)
+        nlines = df_lbls["label_lines"].iloc[line]
+        oneline = nlines == 1
+        twolines = nlines == 2
+        manylines = nlines >= 3
+        # print(nlines)
 
-     
+        lg_twolines = df_lbls["len_twolines"].iloc[line]
+        sm_twolines = twolines and not(lg_twolines)
 
-        m = 0.05 # 5% margins
+
+        # CREATE SECTIONS FOR LABEL PLACEMENT
+        # PLOT MARGINS
+        mxh = 0.13 # 13% margins
+        mxl = 0.02 # 2% margins
+        myh = 0.04 # 6% margins
+        myl = 0.02 # 2% margins
+
         delta_x = ax.get_xlim()[1] - ax.get_xlim()[0]
         delta_y = ax.get_ylim()[1] - ax.get_ylim()[0]
 
-        x_margin = delta_x*m
-        y_margin = delta_y*m
+        margin_x_high = delta_x * mxh
+        margin_x_low = delta_x * mxl
+        margin_y_high = delta_y * myh
+        margin_y_low = delta_y * myl
 
-        ylim_l = ax.get_ylim()[0] + (y_margin)
-        ylim_h = ax.get_ylim()[1] - (y_margin)
+        lim_y_low = ax.get_ylim()[0] + (margin_y_low)
+        lim_y_high = ax.get_ylim()[1] - (margin_y_high)
 
-        xlim_l = ax.get_xlim()[0] + (x_margin)
-        xlim_h = ax.get_xlim()[1] - (x_margin)
-        
-        sec_x1 = delta_x / 3.0
+        lim_x_low = ax.get_xlim()[0] + (margin_x_low)
+        lim_x_high = ax.get_xlim()[1] - (margin_x_high)
+
+        # create margin booleans
+        point_in_margin_x_low = x_thr <= lim_x_low
+        point_in_margin_x_high = x_thr >= lim_x_high
+
+        point_in_margin_y_low = y_exp <= lim_y_low
+        point_in_margin_y_high = y_exp >= lim_y_high
+
+
+        # PLOT SECTION X AXIS
+        num_sections = 6.0
+        sec_x1 = delta_x / num_sections
         sec_x2 = ax.get_xlim()[1] - sec_x1
 
-        # print("sections ", sec_x1, sec_x2)
+        sections = [sec_x1 * i for i in range(0,int(num_sections)+1)]
+        point_in_section_more = [x_thr > x for x in sections]
+        point_section = point_in_section_more.count(True)
+        # print(sections)
+        # print(x_thr)
+        # print(point_in_section_more)
+        # print(point_section)
 
-        x_thr=df_lbls[x].iloc[line]
-        y_thr=df_lbls[x].iloc[line]
-        y_exp=df_lbls[y].iloc[line]
 
+        point_in_section_first = point_section == 1
+        point_in_section_last = point_section == num_sections
+        point_in_section_middle = not(point_in_section_first or point_in_section_last)
 
-        below_line = y_thr > y_exp
-        # if y_thr > y_exp: 
-        #     y_exp = y_thr
-
-        point_in_section_x1 = x_thr < sec_x1
-        point_in_section_x3 = x_thr > sec_x2
-        point_in_section_x2 = not(point_in_section_x1 or point_in_section_x3)
-
-        point_in_margin_xl = x_thr <= xlim_l
-        point_in_margin_xh = x_thr >= xlim_h
-
-        point_in_margin_yl = y_exp <= ylim_l
-        point_in_margin_yh = y_exp >= ylim_h
 
         y_txt = y_exp
         x_txt = x_thr
 
         # ADJUST TEXT PLACEMENT OFFSETS
         if below_line:
-            ox=lvls["xsm"]
-            oy=lvls["md"] * -1 # increasing oy lowers the text on the plot
+            ox = 5.0
+            oy = -2.0 # lowers the text on the plot
 
+            if manylines:
+                ox = 8.5
+                oy = -0.5
 
+                if point_section == 1:
+                    ox = 4.5
+                    oy = -6.0
 
-            if point_in_margin_yl:
-                print(f"MARGIN / Y L {pnt_lbl}\n")
-                ox = lvls["sm"] * -1 # move text towards right edge of plot
-                oy = lvls["xsm"] * -1 # move text away from bottom of plot
+                elif point_section == 2:
+                    ox = 7.0
+                    oy = -6.0
 
-            elif point_in_section_x1:
-                print(f"SECTION / X1 {pnt_lbl}\n")
-                ox = lvls["sm"] # larger offset
-                ox *= 0.3
-                oy *= 1.1
+                    if seq_lbl_lines % 2 == 1:
+                        ox = 9.0
+                        oy = -4.0
 
-                if line % 3 == 0:
-                    ox = lvls["xsm"] # smaller offset
-                    # ox *= 0.3
-                    oy *= 0.6
-                else:
-                    ox *= 1.5
+                elif point_section == 3:
+                    oy = 2.0
 
+            elif lg_twolines:
+                ox = 8.0
+                oy = -1.5
 
+                if point_section == 1:
+                    ox = 3.0
+                    oy = -2.0
 
-            if point_in_margin_xh:
-                print(f"MARGIN / X H {pnt_lbl}\n")
-                ox = lvls["sm"] * -1 # move text away from right edge of plot
+                    if seq_lbl_lines % 2 == 1:
+                        oy = -3.0
 
-            elif point_in_section_x3:
-                print(f"SECTION / X3 {pnt_lbl}\n")
-                ox = lvls["sm"] # larger offset
-                ox *= 0.75 # adjust slightly left
-                oy *= 1.1
+                elif point_section == 2:
+                    ox = 4.75
+                    oy = -2.5
 
+                    if seq_lbl_lines % 3 == 1:
+                        ox = 7.0
+                        oy = -3.5
 
+                elif point_section == 3:
+                    ox = 5.0
+                    oy = 1.5
 
-            if point_in_section_x2:
-                ox = lvls['sm']
-                oy *= 2
+                elif point_section == 4:
+                    ox = 3.0
+                    oy = 1.25
+           
+            elif sm_twolines:
+                # print("-"*30,seq_lbl_lines, seq_lbl_lines % 5)
+                ox = 5.5
+                oy = 1.0
 
-                if line % 2 == 1:
-                    ox *= 3.5
-                    oy *= 0.9
+                if point_section == 1:
+                    ox = 1.2
+                    oy = -1.0
 
-                else:
-                    ox *= 1.5
-                    oy *= 0.23
+                elif point_section == 2:
+                    ox = 2.75
+                    oy = -0.5
 
-                    if line % 3 == 2:
-                        ox *= 0.1
-                        oy *= 0.95
+                    if seq_lbl_lines % 3 == 1:
+                        ox = 1.05
+                        oy = -0.5
 
+                    elif seq_lbl_lines % 3 == 2:
+                        ox = 4.1
+                        oy = -1.75
 
-                ox *= 1.0
-                oy *= 1.7
+                elif point_section == 3:
+                    ox = 3.0
+                    oy = 0.25
 
+                    if seq_lbl_lines % 2 == 1:
+                        ox = 5.0
 
+                elif point_section == 4:
+                    ox = 2.75
+                    oy = 0.25
 
-            # if line % 2 == 0:
-            #     ox *= 3
-            #     oy *= 3
+            elif oneline:
+                ox = 0.1
+                oy = -1.3
 
-            #     if line % 3 == 0:
-            #         oy *= 0.5
-            #         ox *= 0.5
+                if point_section == 1: pass # no points as of 2022-07-28
+                elif point_section == 2:
+                    ox = 0.25
+                    oy = -1.25
 
+                    if seq_lbl_lines % 3 == 1:
+                        ox = 0.6
+                        oy = -1.0
 
-            y_txt += oy
-            x_txt += ox
+                    if seq_lbl_lines % 3 == 2:
+                        ox = 2.6
+                        oy = -0.73
 
+                elif point_section == 3:
+                    ox = 1.0
+                    oy = 0.7
 
-            # if (point_in_section_x1 or point_in_section_x3):
-            #     oy *= 0.8
-            #     ox *= 0.3
+                elif point_section == 4:
+                    ox = 0.1
+                    oy = 0.5
 
-            # if point_in_margin_xh:
-            #     print(pnt_lbl, " in margin")
-            #     ox *= -1
-            #     ox *= 0.4
+            if point_in_margin_y_low: print(f"MARGIN / Y L {pnt_lbl}\n")
+            elif point_in_section_first: print(f"SECTION / X1 {pnt_lbl}\n")
+
+            if point_in_margin_x_high: print(f"MARGIN / X H {pnt_lbl}\n")
+            elif point_in_section_last: print(f"SECTION / X3 {pnt_lbl}\n")
+
+            if point_in_section_middle: print(f"SECTION / X2 {pnt_lbl}\n")
 
         else: # above line
-            ox=lvls["md"] * -1
-            oy=lvls["md"]
+            ox = -3.0
+            oy = 2.75
+
+            # place labels by number of lines
+            if manylines:
+                ox = -2.0
+                oy = 7.0
+
+                if point_section == 1:
+                    ox = -2.5
+                    oy = 10.0
+
+                elif point_section == 2:
+                    ox = -2.5
+                    oy = 9.5
+
+                    if seq_lbl_lines % 3 == 1:
+                        ox = -5.5
+                        oy = 7.0
+
+                    if seq_lbl_lines % 3 == 2:
+                        ox = -5.1
+                        oy = 8.5
+
+                elif point_in_section_last:
+                    ox = -10.0
+                    oy = -2.0
+
+            elif lg_twolines:
+                ox = -3.0
+                oy = 2.75
+
+                if point_section == 1:
+                    ox = -3.5
+                    oy = 4.75
+
+                    if seq_lbl_lines % 3 == 1:
+                        ox = -2.5
+                        oy = 3.0
+
+                    if seq_lbl_lines % 3 == 2:
+                        ox = -3.5
+                        oy = 2.75
+
+                elif point_section == 2:
+                    ox = -2.5
+                    oy = 4.0
+
+                    if seq_lbl_lines % 3 == 1:
+                        ox = -1.75
+                        oy = 3.0
+
+                    if seq_lbl_lines % 3 == 2:
+                        ox = -2.0
+                        oy = 3.75
+
+                elif point_section == 3:
+                    ox = -3.0
+                    oy = 4.0
+
+                    if seq_lbl_lines % 3 == 1:
+                        ox = -3.0
+                        oy = 5.25
+
+                    if seq_lbl_lines % 3 == 0:
+                        ox = -3.0
+                        oy = 5.0
+
+            elif sm_twolines:
+                ox = -1.5
+                oy = 1.25
+
+                if point_section == 1: 
+                    ox = -1.5
+                    oy = 1.25
+
+                elif point_section == 2: 
+                    ox = -1.15
+                    oy = 1.3
+
+                    if seq_lbl_lines % 2 == 1:
+                        oy = 2.5
+
+                elif point_section == 4:
+                    ox = -1.5
+                    oy = 1.25
+
+                elif point_in_section_last: 
+                    ox = 1.3
+                    oy = -0.5
 
 
-            if point_in_margin_xl:
-                print(f"MARGIN X L / {pnt_lbl}\n")
+            elif oneline:
+                # print("-"*30,seq_lbl_lines, seq_lbl_lines % 5)
+                ox = -1.0
+                oy = 2.0
 
-            elif point_in_section_x1:
-                print(f"SECTION X1 / {pnt_lbl}\n")
-                ox *= 1.21
-                oy *= 0.6
+                if point_section == 1:
+                    ox = -1.5
+                    oy = 1.0
 
-                if line % 2 == 1:
-                    ox *= 1.6
-                    oy *= 2.2
+                    if seq_lbl_lines % 2 == 1:
+                        ox = -2.0
+                        oy = 0.4
 
-                    if line % 4 == 1:
-                        ox *= 1.1
-                        oy *= 1.5
+                elif point_section == 2:
+                    ox = -1.0
+                    oy = 1.25
 
-
-
-            if point_in_margin_yh:
-                print(f"MARGIN Y H / {pnt_lbl}\n")
-                oy *= -1
-                oy *= 0.1
-            
-            elif point_in_section_x3:
-                print(f"SECTION X3 / {pnt_lbl}\n")
-                if line % 2 == 0:
-                    ox *= 2.0
-                    oy *= 1.3
-
-                    if line % 4 == 0:
-                        ox *= 1.45
-                        oy *= 1.25
+                elif point_in_section_last:
+                    ox = 2.0
+                    oy = -0.05
 
 
-            if point_in_section_x2:
-                if line % 2 == 1:
-                    ox *= 2.5
-                    oy *= 2.1
+            # optionally adjust placement of labels by location in plot
+            if point_in_margin_x_low: print(f"MARGIN X L / {pnt_lbl}\n")
+            elif point_in_section_first: print(f"SECTION X1 / {pnt_lbl}\n")
 
-                    if line % 4 == 1:
-                        oy *= 0.7
+            if point_in_margin_y_high: print(f"MARGIN Y H / {pnt_lbl}\n")
+            elif point_in_section_last: print(f"SECTION X3 / {pnt_lbl}\n")
 
-                else:
-                    ox *= 0.8
-                    oy *= 1.5                        
+            if point_in_section_middle: print(f"SECTION X2 / {pnt_lbl}\n")
+            if not(point_in_section_middle): pass
 
 
-            if not(point_in_section_x2):
-                oy *= 0.65
-                ox *= 0.75
-
-            y_txt += oy
-            x_txt += ox
+        # add offsets
+        y_txt += oy
+        x_txt += ox
 
 
+        # BRING ANNOTATIONS INSIDE THE MARGINS OF THE PLOT
+        while y_txt > lim_y_high:
+            # print(f"\nH {y_exp+oy:.4f} > lim_y_high {lim_y_high:.4f} -- {oy}")
+            if abs(round(y_txt, 5)) <= abs(round(lim_y_high, 5)):
+                y_txt = lim_y_high
 
-        # BRING ANNOTATIONS INSIDE THE BOUNDS OF THE PLOT
-        while y_txt > ylim_h:
-            # print(f"\nH {y_exp+oy:.4f} > ylim_h {ylim_h:.4f} -- {oy}")
-            if abs(round(y_txt, 5)) <= abs(round(ylim_h, 5)):
-                y_txt = ylim_h
-
-            if xlim_h < 0:
+            if lim_x_high < 0:
                 y_txt *= 1.01
             else:
                 y_txt *= 0.99
 
-        while x_txt > xlim_h:
-            # print(f"\nH {x_txt:.4f} > xlim_h {xlim_h:.4f} -- {ox}")
-            if abs(round(x_txt, 5)) <= abs(round(xlim_h, 5)):
-                x_txt = xlim_h
+        while x_txt > lim_x_high:
+            # print(f"\nH {x_txt:.4f} > lim_x_high {lim_x_high:.4f} -- {ox}")
+            if abs(round(x_txt, 5)) <= abs(round(lim_x_high, 5)):
+                x_txt = lim_x_high
 
-            if xlim_h < 0:
+            if lim_x_high < 0:
                 x_txt *= 1.01
             else:
                 x_txt *= 0.99
 
-        while y_txt < ylim_l:
-            # print(f"\nL {y_txt:.4f} < ylim_l {ylim_l:.4f}")
-            if abs(round(y_txt, 5)) >= abs(round(ylim_l, 5)):
-                y_txt = ylim_l
+        while y_txt < lim_y_low:
+            # print(f"\nL {y_txt:.4f} < lim_y_low {lim_y_low:.4f}")
+            if abs(round(y_txt, 5)) >= abs(round(lim_y_low, 5)):
+                y_txt = lim_y_low
 
-            if ylim_l < 0:
+            if lim_y_low < 0:
                 y_txt *= 0.995
             else:
                 y_txt *= 1.005
 
-        while x_txt < xlim_l:
-            # print(f"\nL {x_thr-ox:.4f} < xlim_l {xlim_l:.4f}")
-            if abs(round(x_txt, 5)) >= abs(round(xlim_l, 5)):
-                x_txt = xlim_l
+        while x_txt < lim_x_low:
+            # print(f"\nL {x_thr-ox:.4f} < lim_x_low {lim_x_low:.4f}")
+            if abs(round(x_txt, 5)) >= abs(round(lim_x_low, 5)):
+                x_txt = lim_x_low
 
-            if xlim_l < 0:
+            if lim_x_low < 0:
                 x_txt *= 0.995
             else:
                 x_txt *= 1.005
 
 
-
         pnt_coords = (x_thr, y_exp)
         text_coords = (x_txt, y_txt)
+        rad = -0.1 if below_line else 0.1
 
         texts.append(plt.annotate(pnt_lbl, 
                     xy=pnt_coords, xytext=text_coords, 
                     # verticalalignment='center', horizontalalignment='right', 
                     size=7, color='black', weight='light',
                     arrowprops={"arrowstyle":"-|>, widthA=.4, widthB=.4",
-                                "connectionstyle":"arc3,rad=-.1",
+                                "connectionstyle":f"arc3,rad={rad}",
                                 "color":"gray", "alpha":0.3
                     })
         )
@@ -546,20 +729,22 @@ def plot_data1(df, x, y, z, point_labels,  **kwargs):
     #     expand_points=(1.01, 1.01),
     #     autoalign='y', avoid_points=False, avoid_self=False,
     #     only_move={'points':'', 'text':'xy', 'objects':''})
+    
+
+    # LEGEND
+    handles, labels  =  ax.get_legend_handles_labels() # get legend text  
+    labels = [create_latex_labels(l) for l in labels] # Al2O3 --> $Al_{2}O_{3}$
+    ax.legend(handles, labels) # set modified labels
+
+    sns.move_legend(ax, "upper left", bbox_to_anchor=(1, 1), ncol=2)
 
     return fig
 
 
 
-
-# # df_merged.plot(x=density_thr, y=density_exp, marker='x', kind='scatter') # scatter plot
-# fig1 = plot_data(df_merged, x=density_thr, y=density_exp, z="Material")
 fig2 = plot_data1(df_merged, x=density_thr, y=density_exp, z=key, point_labels=[key, "Phase"], units=density_units)
-# fig2 = plot_swarm(df_tidy, x="Type", y="Density", z="Material")
 
-
-# fig1.savefig('plots/plotDensities.png', dpi=200, bbox_inches="tight")
-fig2.savefig('plots/plotDensities-3.png', dpi=200, bbox_inches="tight")
+fig2.savefig('plots/plotDensities-4.png', dpi=200, bbox_inches="tight")
 
 # plt.show()
 
