@@ -16,14 +16,13 @@ from matplotlib.ticker import AutoMinorLocator, FuncFormatter
 import random
 import re
 
+import daz_utils as daz
 
 
 
 sheet_id = "1CnYIYPMymwAKaVlElBk4ceNN2RtTxpKIHTzuTRjfY3s"
 sheet_name = "FilmProps"
 url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/gviz/tq?tqx=out:csv&sheet={sheet_name}"
-
-# TODO: option to choose material. Al2O3, TiO2
 
 
 # LOAD DATA
@@ -50,20 +49,36 @@ Z="Material"
 # FILTER
 # print("---------------------------------------------------")
 
-m = 2 # only plot if there are more than m values per category Z
+# TODO: in progess
+z_material = Z
+x_tdep = X
 
-# require a material to have more than m data points to plot it
-count_z = df[Z].value_counts()
-filt_minpoints = df[Z].isin(count_z[count_z > m].index)
+_, s_one = daz.data_value_counts_num(df, z_material, n=2, how="<")
+_, s_two = daz.data_value_counts_num(df, z_material, n=2, how=">=")
 
-# require more than m unique temperatures to plot the material
-count_x = df.groupby(Z)[X].nunique()
-filt_temps = df[Z].isin(count_x[count_x > m].index)
+print()
+print(f"# of materials with 1 data point: {s_one.size}")
+print(f"# of materials with 2+ data points: {s_two.size}")
 
-filt = filt_minpoints & filt_temps
 
-df_plot = df.loc[filt, :] # create new df with filtered values
-df_plot2 = df.loc[filt_minpoints, :] # create new df with filtered values
+minpoints_z = 2 # only plot if there are more than m values per category z_material
+minpoints_x = 2 # only plot if there are more than m values per category z_material
+
+# require a material to have more than minpoints_z data points to plot it
+count_z = df[z_material].value_counts()
+filt_minpoints_z = df[z_material].isin(count_z[count_z > minpoints_z].index)
+
+# require more than minpoints_x unique temperatures per material to plot
+count_x = df.groupby(z_material)[x_tdep].nunique()
+filt_minpoints_x = df[z_material].isin(count_x[count_x > minpoints_x].index)
+
+filt_minpoints = filt_minpoints_z & filt_minpoints_x
+
+# each material has at least minpoints_z entries and minpoints_x different x values
+df_plot = df.loc[filt_minpoints, :] 
+
+# each material has at least minpoints_z entries
+df_plot2 = df.loc[filt_minpoints_z, :]
 
 # print(df_plot.tail())
 
@@ -77,25 +92,6 @@ print("---------------------------------------------------")
 # print(df[Z].value_counts(), "\n")
 print(df_plot2[Z].value_counts(), "\n")
 print(df_plot2.groupby(Z)[X].nunique(), "\n")
-
-
-def create_latex_labels(label):
-    if type(label) is float and np.isnan(label):
-        return label
-
-    label = str(label)
-    lbls = label.split(" ", 1)
-    new_label = []
-    for lbl in lbls:
-        lbl = str(lbl)
-        nlbl =  re.sub(r'([a-zA-Z])(\d+)', r'\1_{\2}',lbl)
-        nlbl = lbl if (lbl==nlbl) else f"${nlbl}$"
-        new_label.append(nlbl)
-
-    label = " ".join(new_label)
-    label = label.strip()
-    label = rf'{label}'
-    return label
 
 
 def get_line_plot(df, x, y, z):
@@ -146,7 +142,7 @@ def get_line_plot(df, x, y, z):
     #     df_g.vals.plot(kind="kde", ax=ax, label=label)
 
     handles, labels  =  ax.get_legend_handles_labels() # get legend text  
-    labels = [create_latex_labels(l) for l in labels] # Al2O3 --> $Al_{2}O_{3}$
+    labels = [daz.create_latex_labels(l) for l in labels] # Al2O3 --> $Al_{2}O_{3}$
     ax.legend(handles, labels) # set modified labels
 
     sns.move_legend(ax, title=f"{z}s", loc=2, bbox_to_anchor=(1.01, 1));
@@ -158,7 +154,7 @@ def get_line_plot(df, x, y, z):
 
     return fig
 
-def get_fit_plot(df, x, y, z):
+def get_fit_plot(df, x, y, z, hue):
     # plot
     print(df.info())
 
@@ -173,12 +169,29 @@ def get_fit_plot(df, x, y, z):
     # sns.regplot(data=df, x=X, y=Y, ci=None) # scatter plot with linear regression
     
     
-    sns.set(font_scale = 1.50)
+    # sns.set(font_scale = 1.50)
+    df_plot = df.loc[:,[x,y,z,hue]]
+
+    df_plot[z] = df_plot[z].apply(daz.create_latex_labels)
+
+    SMALL_SIZE = 16
+    MEDIUM_SIZE = 18
+    BIGGER_SIZE = 20
+
+    plt.rc('font', size=SMALL_SIZE)          # controls default text sizes
+    plt.rc('axes', titlesize=SMALL_SIZE)     # fontsize of the axes title
+    plt.rc('axes', labelsize=MEDIUM_SIZE)    # fontsize of the x and y labels
+    plt.rc('xtick', labelsize=SMALL_SIZE)    # fontsize of the tick labels
+    plt.rc('ytick', labelsize=SMALL_SIZE)    # fontsize of the tick labels
+    plt.rc('legend', fontsize=SMALL_SIZE)    # legend fontsize
+    plt.rc('figure', titlesize=BIGGER_SIZE)  # fontsize of the figure title
+
 
     # scatter plot with linear regression for each category Z 
-    fig = sns.lmplot(data=df, x=x, y=y, hue="PEALD?", markers=["^", "v"], col=z, col_wrap=4, ci=None, 
+    fig = sns.lmplot(data=df_plot, x=x, y=y, col=z, col_wrap=4, ci=None, 
+        hue=hue, hue_order=[True, False], markers=["^", "v"], palette=["orangered", "navy"],
         facet_kws = dict(sharex=False, sharey=False), 
-        scatter_kws={"s": 45, "alpha":0.7}, 
+        scatter_kws={"s": 70, "alpha":0.5}, 
         line_kws={"lw":1.5, "alpha":0.5})
 
     
@@ -197,7 +210,7 @@ def get_fit_plot(df, x, y, z):
 
     # fix y axis sigfigs
     for ax in fig.axes.flat:
-        ax.yaxis.set_major_formatter(FuncFormatter(lambda y, p: f'{y:.2f}'))
+        ax.yaxis.set_major_formatter(FuncFormatter(lambda y, p: f'{y:.1f}'))
 
     # SET AXIS LABELS
     fig.set_axis_labels( "Deposition Temperature (°C)", "Density $(g.cm^{-3})$" )
@@ -210,7 +223,7 @@ def get_fit_plot(df, x, y, z):
     # plt.tight_layout()
     return fig
 
-fig1 = get_fit_plot(df_plot, X, Y, Z)
+fig1 = get_fit_plot(df_plot, X, Y, Z, hue="PEALD?")
 fig2 = get_line_plot(df_plot2, X, Y, Z)
 
 
