@@ -21,8 +21,6 @@ sheet_id = "1CnYIYPMymwAKaVlElBk4ceNN2RtTxpKIHTzuTRjfY3s"
 sheet_name = "FilmProps"
 url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/gviz/tq?tqx=out:csv&sheet={sheet_name}"
 
-# TODO: option to choose material. Al2O3, TiO2
-
 
 # LOAD DATA
 df = pd.read_csv(url)
@@ -69,15 +67,14 @@ print(df_material.info())
 
 def plot_data(df, x, y, hue, **kwargs):
 
-
     fig = sns.lmplot(data=df, x=x, y=y, 
-        hue=hue, hue_order=[True, False], markers=["^", "v"], palette=["darkorange", "dodgerblue"],
+        hue=hue, hue_order=[True, False], markers=["^", "v"], palette=["orangered", "navy"],
         ci=None, fit_reg=False,
-        scatter_kws={"s": 45, "alpha":0.7}, 
+        scatter_kws={"s": 45, "alpha":0.5}, 
         line_kws={"lw":1.5, "alpha":0.5})
 
     sns.regplot(data=df, x=x, y=y, scatter=False, ci=None, 
-        line_kws={"lw":1.5, "alpha":0.5, "color":"k"}).set(title=daz.create_latex_labels(kwargs.get("title")))
+        line_kws={"lw":1.5, "alpha":0.7, "color":"darkslateblue"}).set(title=daz.create_latex_labels(kwargs.get("title")))
 
     return fig
 
