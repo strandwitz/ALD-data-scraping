@@ -104,7 +104,7 @@ re_cols = {
         "Density (g.cm-3)": density_exp,
         "Tdep (°C)": "Deposition Temperature (°C)"
     }, 
-    "thr": {"Density gcm3": density_thr}
+    "thr": {"Density (g.cm-3)": density_thr}
 }
 
 df_exp.rename(columns=re_cols['exp'], inplace=True)
@@ -122,12 +122,12 @@ cols_exp = ['Source DOI', key, density_exp,
             'Paper also measured']
 df_exp = df_exp[cols_exp]
 
-cols_thr = [key, 'Phase', density_thr, 'Space group']
+cols_thr = [key, 'Phase', density_thr, "Label", 'Space group']
 df_thr = df_thr[cols_thr]
 
 
 # MERGE DATAFRAMES
-cols = ([density_exp], [density_thr, "Phase"])
+cols = ([density_exp], [density_thr, "Phase", "Label"])
 df_merged = ald_merge_df(df_exp, df_thr, key, cols, view_data=False)
 
 
@@ -305,28 +305,30 @@ def plot_data1(df, x, y, z, point_labels,  **kwargs):
 
 
     # PLOT LABELS
-    df_lbls = df.loc[:, [x, y, *point_labels]]
+    df_lbls = df.loc[:, [x, y, z, point_labels]]
     df_lbls.sort_values(by=[x,y], ascending=True, inplace=True)
     df_lbls.drop_duplicates(subset=[x, z], keep='last', inplace=True)
 
     # df_lbls["tmp"] =  df_lbls[point_labels[1]].str.contains( df_lbls[point_labels[0]], regex=False )
     df_lbls[point_labels] = df_lbls[point_labels].fillna('')
-    filt_material_in_phase = df_lbls.apply(lambda r: r[point_labels[0]] in r[point_labels[1]], axis=1)
+    # filt_material_in_phase = df_lbls.apply(lambda r: r[point_labels[0]] in r[point_labels[1]], axis=1)
 
-    for lbl_col in point_labels:
+    # for lbl_col in point_labels:
         # print(df_lbls[lbl_col].head())
-        df_lbls[lbl_col] = df_lbls[lbl_col].apply(create_latex_labels)
+        # df_lbls[lbl_col] = df_lbls[lbl_col].apply(create_latex_labels)
     
+    df_lbls[point_labels] = df_lbls[point_labels].apply(create_latex_labels)
     # df_lbls[point_labels[0]] = df_lbls[point_labels[0]].apply(create_latex_labels)
 
-    df_lbls.loc[filt_material_in_phase, ["label"]] = df_lbls[point_labels[1]] # NOTE: may need to split str if phase has multiple annotations
-    df_lbls.loc[~filt_material_in_phase, ["label"]] = df_lbls[point_labels[0]]+"\n"+df_lbls[point_labels[1]].str.replace(r'\s', r'\n', n=1, regex=True)
-    df_lbls["label"] = df_lbls["label"].str.strip()
-    df_lbls["label_lines"] = df_lbls["label"].str.count("\n")+1
+    # df_lbls.loc[filt_material_in_phase, ["label"]] = df_lbls[point_labels[1]] # NOTE: may need to split str if phase has multiple annotations
+    # df_lbls.loc[~filt_material_in_phase, ["label"]] = df_lbls[point_labels[0]]+"\n"+df_lbls[point_labels[1]].str.replace(r'\s', r'\n', n=1, regex=True)
+    df_lbls[point_labels] = df_lbls[point_labels].str.replace(r'\s+', r'\n', n=2, regex=True)
+    df_lbls[point_labels] = df_lbls[point_labels].str.strip()
+    df_lbls["label_lines"] = df_lbls[point_labels].str.count("\n")+1
 
     filt_twolines = df_lbls["label_lines"] == 2
     long_label = 6
-    df_lbls.loc[filt_twolines, ["len_twolines"]] = df_lbls["label"].str.replace(r'.+\n(.+)(?:\n.*)?', r'\1', regex=True).str.len() > long_label
+    df_lbls.loc[filt_twolines, ["len_twolines"]] = df_lbls[point_labels].str.replace(r'.+\n(.+)(?:\n.*)?', r'\1', regex=True).str.len() > long_label
     df_lbls["len_twolines"] = df_lbls["len_twolines"].fillna(False)
 
     df_lbls["below_line"] = df_lbls[x] > df_lbls[y]
@@ -355,7 +357,7 @@ def plot_data1(df, x, y, z, point_labels,  **kwargs):
 
 
         # GET LABEL TEXT
-        pnt_lbl = df_lbls["label"].iloc[line]
+        pnt_lbl = df_lbls[point_labels].iloc[line]
 
         nlines = df_lbls["label_lines"].iloc[line]
         oneline = nlines == 1
@@ -742,7 +744,7 @@ def plot_data1(df, x, y, z, point_labels,  **kwargs):
 
 
 
-fig2 = plot_data1(df_merged, x=density_thr, y=density_exp, z=key, point_labels=[key, "Phase"], units=density_units)
+fig2 = plot_data1(df_merged, x=density_thr, y=density_exp, z=key, point_labels="Label", units=density_units)
 
 fig2.savefig('plots/plotDensities-4.png', dpi=200, bbox_inches="tight")
 
