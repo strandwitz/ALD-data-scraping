@@ -310,7 +310,7 @@ def plot_data1(df, x, y, z, point_labels,  **kwargs):
 
     # PLOT LABELS
     df_lbls = df.loc[:, [x, y, z, point_labels]]
-    df_lbls.sort_values(by=[y,x], ascending=[True,False], inplace=True)
+    df_lbls.sort_values(by=[x,y], ascending=[True,True], inplace=True)
     df_lbls.drop_duplicates(subset=[x, z], keep='last', inplace=True)
 
     # df_lbls["tmp"] =  df_lbls[point_labels[1]].str.contains( df_lbls[point_labels[0]], regex=False )
@@ -423,223 +423,223 @@ def plot_data1(df, x, y, z, point_labels,  **kwargs):
 
         y_txt = y_exp
         x_txt = x_thr
-        rad = 0 if below_line else 0.1
+        rad = 0
         halign = "center"
         valign = "center"
 
-        # ADJUST TEXT PLACEMENT OFFSETS
-        if below_line:
-            ox = 5.0
-            oy = -2.0 # lowers the text on the plot
+        # # ADJUST TEXT PLACEMENT OFFSETS
+        # if below_line:
+        #     ox = 5.0
+        #     oy = -2.0 # lowers the text on the plot
 
-            if manylines:
-                ox = 8.5
-                oy = -0.5
+        #     if manylines:
+        #         ox = 8.5
+        #         oy = -0.5
 
-                if point_section == 1:
-                    ox = 4.5
-                    oy = -6.0
+        #         if point_section == 1:
+        #             ox = 4.5
+        #             oy = -6.0
 
-                elif point_section == 2:
-                    ox = 7.0
-                    oy = -6.0
+        #         elif point_section == 2:
+        #             ox = 7.0
+        #             oy = -6.0
 
-                    if seq_lbl_lines % 2 == 1:
-                        ox = 9.0
-                        oy = -4.0
+        #             if seq_lbl_lines % 2 == 1:
+        #                 ox = 9.0
+        #                 oy = -4.0
 
-                elif point_section == 3:
-                    oy = 2.0
+        #         elif point_section == 3:
+        #             oy = 2.0
 
-            elif lg_twolines:
-                ox = 15.0
-                oy = -3.5
+        #     elif lg_twolines:
+        #         ox = 15.0
+        #         oy = -3.5
 
-                if seq_lbl_lines % 3 == 1:
-                    ox -= 5.0
-                    oy += 0.75
+        #         if seq_lbl_lines % 3 == 1:
+        #             ox -= 5.0
+        #             oy += 0.75
 
-                elif seq_lbl_lines % 3 == 2:
-                    ox -= 3.0
-                    oy -= 0.25
+        #         elif seq_lbl_lines % 3 == 2:
+        #             ox -= 3.0
+        #             oy -= 0.25
 
-                if point_section == 1:
-                    ox -= 3.0
-                    oy -= 2.5
+        #         if point_section == 1:
+        #             ox -= 3.0
+        #             oy -= 2.5
 
 
-                elif point_in_section_last:
-                    ox = 0
-                    oy = -2.0
+        #         elif point_in_section_last:
+        #             ox = 0
+        #             oy = -2.0
            
-            elif sm_twolines:
-                # print("-"*30,seq_lbl_lines, seq_lbl_lines % 5)
-                ox = 8.0
-                oy = -3.5
+        #     elif sm_twolines:
+        #         # print("-"*30,seq_lbl_lines, seq_lbl_lines % 5)
+        #         ox = 8.0
+        #         oy = -3.5
 
-                if seq_lbl_lines % 3 == 1:
-                    ox -= 1.5
-                    oy += 1.0
+        #         if seq_lbl_lines % 3 == 1:
+        #             ox -= 1.5
+        #             oy += 1.0
 
-                elif seq_lbl_lines % 3 == 2:
-                    ox -= 3.5
-                    oy += 1.8
+        #         elif seq_lbl_lines % 3 == 2:
+        #             ox -= 3.5
+        #             oy += 1.8
 
-                if point_section == 1:
-                    ox -= 4.0
-                    oy -= 2.5
-
-
-            elif oneline:
-                ox = 0.5
-                oy = -2.5
-
-                if seq_lbl_lines % 3 == 0:
-                    ox += 0.5
-                    oy -= 0.75
-
-                elif seq_lbl_lines % 3 == 1:
-                    ox += 1.5
-                    oy -= 1.75
-
-                if point_section == 1:
-                    ox = 1.0
-                    oy = -2.0
-                elif point_section == 2:
-                    ox += 1.2
-                    oy -= 0.25
+        #         if point_section == 1:
+        #             ox -= 4.0
+        #             oy -= 2.5
 
 
-            if point_in_margin_y_low: print(f"MARGIN / Y L {pnt_lbl}\n")
-            elif point_in_section_first: print(f"SECTION / X1 {pnt_lbl}\n")
+        #     elif oneline:
+        #         ox = 0.5
+        #         oy = -2.5
 
-            if point_in_margin_x_high: print(f"MARGIN / X H {pnt_lbl}\n")
-            elif point_in_section_last: print(f"SECTION / X3 {pnt_lbl}\n")
+        #         if seq_lbl_lines % 3 == 0:
+        #             ox += 0.5
+        #             oy -= 0.75
 
-            if point_in_section_middle: print(f"SECTION / X2 {pnt_lbl}\n")
+        #         elif seq_lbl_lines % 3 == 1:
+        #             ox += 1.5
+        #             oy -= 1.75
 
-        else: # above line
-            ox = -3.0
-            oy = 2.75
-
-            # place labels by number of lines
-            if manylines:
-                ox = -2.0
-                oy = 7.0
-
-                if point_section == 1:
-                    ox = -2.5
-                    oy = 10.0
-
-                elif point_section == 2:
-                    ox = -2.5
-                    oy = 9.5
-
-                    if seq_lbl_lines % 3 == 1:
-                        ox = -5.5
-                        oy = 7.0
-
-                    if seq_lbl_lines % 3 == 2:
-                        ox = -5.1
-                        oy = 8.5
-
-                elif point_in_section_last:
-                    ox = -10.0
-                    oy = -2.0
-
-            elif lg_twolines:
-                ox = -3.0
-                oy = 15.0
-
-                if point_section == 1:
-                    if seq_lbl_lines % 3 == 2:
-                        # ox = -2.5
-                        oy -= 1.5
-
-                    if seq_lbl_lines % 3 == 1:
-                        ox -= 0.5
-                        oy -= 3.0
-
-                elif point_section == 2:
-                    ox += 0.5
-                    oy -= 3.5
-
-                    if seq_lbl_lines % 3 == 2: pass
-                        # ox += 0.5
-                        # oy = 3.0
-
-                    if seq_lbl_lines % 3 == 1: pass
-                        # ox -= 0.5
-                        # oy = 3.75
-
-                elif point_section == 3:
-                    ox += 0.5
-                    oy -= 6.0
-
-                    if seq_lbl_lines % 3 == 2: pass
-                    if seq_lbl_lines % 3 == 1: pass
-
-            elif sm_twolines:
-                ox = -3.1
-                oy = 10.0
-
-                if point_section == 1:
-                    # ox += 1.0
-                    oy -= 3.0
-
-                elif point_section == 2: 
-                    ox += 1.2
-                    oy -= 0.5
-
-                    if seq_lbl_lines % 2 == 0:
-                        ox -= 0.2
-                        oy -= 2.7
-
-                elif point_section == 4:
-                    ox += 2.0
-                    oy -= 4.0
-
-                elif point_in_section_last: 
-                    ox = 1.3
-                    oy = -0.5
+        #         if point_section == 1:
+        #             ox = 1.0
+        #             oy = -2.0
+        #         elif point_section == 2:
+        #             ox += 1.2
+        #             oy -= 0.25
 
 
-            elif oneline:
-                # print("-"*30,seq_lbl_lines, seq_lbl_lines % 5)
-                ox = -1.25
-                oy = 4.25
+        #     if point_in_margin_y_low: print(f"MARGIN / Y L {pnt_lbl}\n")
+        #     elif point_in_section_first: print(f"SECTION / X1 {pnt_lbl}\n")
 
-                if seq_lbl_lines % 3 == 2:
-                    base = oy - 1.75
-                    oy = oy - 2.4 if point_section == 1 else base
+        #     if point_in_margin_x_high: print(f"MARGIN / X H {pnt_lbl}\n")
+        #     elif point_in_section_last: print(f"SECTION / X3 {pnt_lbl}\n")
 
-                elif seq_lbl_lines % 3 == 1:
-                    base = oy - 2.4
-                    oy = oy - 1.75 if point_section == 1 else base
+        #     if point_in_section_middle: print(f"SECTION / X2 {pnt_lbl}\n")
 
-                if point_section == 1:
-                    ox -= 1.75
-                    # oy = 1.0
+        # else: # above line
+        #     ox = -3.0
+        #     oy = 2.75
 
-                elif point_in_section_last:
-                    ox = -2.0
-                    oy = -0.05
+        #     # place labels by number of lines
+        #     if manylines:
+        #         ox = -2.0
+        #         oy = 7.0
+
+        #         if point_section == 1:
+        #             ox = -2.5
+        #             oy = 10.0
+
+        #         elif point_section == 2:
+        #             ox = -2.5
+        #             oy = 9.5
+
+        #             if seq_lbl_lines % 3 == 1:
+        #                 ox = -5.5
+        #                 oy = 7.0
+
+        #             if seq_lbl_lines % 3 == 2:
+        #                 ox = -5.1
+        #                 oy = 8.5
+
+        #         elif point_in_section_last:
+        #             ox = -10.0
+        #             oy = -2.0
+
+        #     elif lg_twolines:
+        #         ox = -3.0
+        #         oy = 15.0
+
+        #         if point_section == 1:
+        #             if seq_lbl_lines % 3 == 2:
+        #                 # ox = -2.5
+        #                 oy -= 1.5
+
+        #             if seq_lbl_lines % 3 == 1:
+        #                 ox -= 0.5
+        #                 oy -= 3.0
+
+        #         elif point_section == 2:
+        #             ox += 0.5
+        #             oy -= 3.5
+
+        #             if seq_lbl_lines % 3 == 2: pass
+        #                 # ox += 0.5
+        #                 # oy = 3.0
+
+        #             if seq_lbl_lines % 3 == 1: pass
+        #                 # ox -= 0.5
+        #                 # oy = 3.75
+
+        #         elif point_section == 3:
+        #             ox += 0.5
+        #             oy -= 6.0
+
+        #             if seq_lbl_lines % 3 == 2: pass
+        #             if seq_lbl_lines % 3 == 1: pass
+
+        #     elif sm_twolines:
+        #         ox = -3.1
+        #         oy = 10.0
+
+        #         if point_section == 1:
+        #             # ox += 1.0
+        #             oy -= 3.0
+
+        #         elif point_section == 2: 
+        #             ox += 1.2
+        #             oy -= 0.5
+
+        #             if seq_lbl_lines % 2 == 0:
+        #                 ox -= 0.2
+        #                 oy -= 2.7
+
+        #         elif point_section == 4:
+        #             ox += 2.0
+        #             oy -= 4.0
+
+        #         elif point_in_section_last: 
+        #             ox = 1.3
+        #             oy = -0.5
 
 
-            # optionally adjust placement of labels by location in plot
-            if point_in_margin_x_low: print(f"MARGIN X L / {pnt_lbl}\n")
-            elif point_in_section_first: print(f"SECTION X1 / {pnt_lbl}\n")
+        #     elif oneline:
+        #         # print("-"*30,seq_lbl_lines, seq_lbl_lines % 5)
+        #         ox = -1.25
+        #         oy = 4.25
 
-            if point_in_margin_y_high: print(f"MARGIN Y H / {pnt_lbl}\n")
-            elif point_in_section_last: print(f"SECTION X3 / {pnt_lbl}\n")
+        #         if seq_lbl_lines % 3 == 2:
+        #             base = oy - 1.75
+        #             oy = oy - 2.4 if point_section == 1 else base
 
-            if point_in_section_middle: print(f"SECTION X2 / {pnt_lbl}\n")
-            if not(point_in_section_middle): pass
+        #         elif seq_lbl_lines % 3 == 1:
+        #             base = oy - 2.4
+        #             oy = oy - 1.75 if point_section == 1 else base
+
+        #         if point_section == 1:
+        #             ox -= 1.75
+        #             # oy = 1.0
+
+        #         elif point_in_section_last:
+        #             ox = -2.0
+        #             oy = -0.05
 
 
-        # add offsets
-        y_txt += oy
-        x_txt += ox
+        #     # optionally adjust placement of labels by location in plot
+        #     if point_in_margin_x_low: print(f"MARGIN X L / {pnt_lbl}\n")
+        #     elif point_in_section_first: print(f"SECTION X1 / {pnt_lbl}\n")
+
+        #     if point_in_margin_y_high: print(f"MARGIN Y H / {pnt_lbl}\n")
+        #     elif point_in_section_last: print(f"SECTION X3 / {pnt_lbl}\n")
+
+        #     if point_in_section_middle: print(f"SECTION X2 / {pnt_lbl}\n")
+        #     if not(point_in_section_middle): pass
+
+
+        # # add offsets
+        # y_txt += oy
+        # x_txt += ox
 
         if below_line:
             x_txt = x_thr
@@ -691,6 +691,60 @@ def plot_data1(df, x, y, z, point_labels,  **kwargs):
 
             x_txt = xx
             y_txt = yy
+
+        else: # above line
+            x_txt = x_thr
+            y_txt = 0
+            # mmm=1.7
+
+            slider=0
+            equ_y_offset=3.5 # x offset
+            pnt_scalor=2.0 # expansion scale
+            x_line=0.5 # line to expand away from
+            equ_slope=1.0 # slope
+
+            # even = ~((seq_lbl_lines%2) or -1)
+            if oneline:
+                print(seq_lbl_lines, y_exp, pnt_lbl)
+                equ_y_offset=3.5 # x offset
+                slider=1.0
+                # pnt_scalor=1.0 # expansion scale
+                # x_line=1.0 # line to expand away from
+                # equ_slope=mmm # slope
+
+                halign = "right"
+                valign = "center"
+
+            elif sm_twolines:
+                # print(seq_lbl_lines, y_exp, pnt_lbl)
+                equ_y_offset=7.0 # x offset
+                slider=5.0
+                pnt_scalor=4.0 # expansion scale
+                x_line=2.0 # line to expand away from
+                # equ_slope=mmm # slope
+
+                # rad = -0.05
+                halign = "center"
+                valign = "top"
+
+            elif lg_twolines:
+                equ_y_offset=11.0 # x offset
+                pnt_scalor=2.5 # expansion scale
+                # x_line=0.5 # line to expand away from
+                # equ_slope=mmm # slope
+
+                # rad = -0.05
+                halign = "left"
+                valign = "center"
+
+
+            b=x_line * (1-pnt_scalor)
+            u=(pnt_scalor *(seq_lbl_lines/2.0)) + b
+            xx=u
+            yy=u/equ_slope + equ_y_offset
+
+            x_txt = xx + slider
+            y_txt = yy + slider
 
         # BRING ANNOTATIONS INSIDE THE MARGINS OF THE PLOT
         while y_txt > lim_y_high:
