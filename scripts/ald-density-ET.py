@@ -310,7 +310,7 @@ def plot_data1(df, x, y, z, point_labels,  **kwargs):
 
     # PLOT LABELS
     df_lbls = df.loc[:, [x, y, z, point_labels]]
-    df_lbls.sort_values(by=[x,y], ascending=True, inplace=True)
+    df_lbls.sort_values(by=[y,x], ascending=[True,False], inplace=True)
     df_lbls.drop_duplicates(subset=[x, z], keep='last', inplace=True)
 
     # df_lbls["tmp"] =  df_lbls[point_labels[1]].str.contains( df_lbls[point_labels[0]], regex=False )
@@ -376,9 +376,9 @@ def plot_data1(df, x, y, z, point_labels,  **kwargs):
         # CREATE SECTIONS FOR LABEL PLACEMENT
         # PLOT MARGINS
         mxh = 0.10 # 13% margins
-        mxl = 0.02 # 2% margins
+        mxl = 0.04 # 2% margins
         myh = 0.04 # 6% margins
-        myl = 0.02 # 2% margins
+        myl = 0.04 # 2% margins
 
         delta_x = ax.get_xlim()[1] - ax.get_xlim()[0]
         delta_y = ax.get_ylim()[1] - ax.get_ylim()[0]
@@ -423,6 +423,9 @@ def plot_data1(df, x, y, z, point_labels,  **kwargs):
 
         y_txt = y_exp
         x_txt = x_thr
+        rad = 0 if below_line else 0.1
+        halign = "center"
+        valign = "center"
 
         # ADJUST TEXT PLACEMENT OFFSETS
         if below_line:
@@ -506,27 +509,6 @@ def plot_data1(df, x, y, z, point_labels,  **kwargs):
                     ox += 1.2
                     oy -= 0.25
 
-
-                # if point_section == 1: pass # no points as of 2022-07-28
-                # elif point_section == 2:
-                #     ox = 0.25
-                #     oy = -1.25
-
-                #     if seq_lbl_lines % 3 == 1:
-                #         ox = 0.6
-                #         oy = -1.0
-
-                #     if seq_lbl_lines % 3 == 2:
-                #         ox = 2.6
-                #         oy = -0.73
-
-                # elif point_section == 3:
-                #     ox = 1.0
-                #     oy = 0.7
-
-                # elif point_section == 4:
-                #     ox = 0.1
-                #     oy = 0.5
 
             if point_in_margin_y_low: print(f"MARGIN / Y L {pnt_lbl}\n")
             elif point_in_section_first: print(f"SECTION / X1 {pnt_lbl}\n")
@@ -659,6 +641,56 @@ def plot_data1(df, x, y, z, point_labels,  **kwargs):
         y_txt += oy
         x_txt += ox
 
+        if below_line:
+            x_txt = x_thr
+            y_txt = 0
+            # mmm=1.7
+
+            equ_x_offset=8.5 # x offset
+            pnt_scalor=2.0 # expansion scale
+            y_line=0.5 # line to expand away from
+            equ_slope=1.7 # slope
+
+            # even = ~((seq_lbl_lines%2) or -1)
+            if oneline:
+                print(seq_lbl_lines, y_exp, pnt_lbl)
+                equ_x_offset=8.5 # x offset
+                pnt_scalor=2.0 # expansion scale
+                # y_line=1.0 # line to expand away from
+                # equ_slope=mmm # slope
+
+                halign = "left"
+                valign = "center"
+
+            elif sm_twolines:
+                # print(seq_lbl_lines, y_exp, pnt_lbl)
+                equ_x_offset=11.0 # x offset
+                pnt_scalor=2.5 # expansion scale
+                # y_line=0.5 # line to expand away from
+                # equ_slope=mmm # slope
+
+                # rad = -0.05
+                halign = "left"
+                valign = "top"
+
+            elif lg_twolines:
+                equ_x_offset=14.0 # x offset
+                pnt_scalor=2.5 # expansion scale
+                # y_line=0.5 # line to expand away from
+                # equ_slope=mmm # slope
+
+                # rad = -0.05
+                halign = "left"
+                valign = "center"
+
+
+            b=y_line * (1-pnt_scalor)
+            u=(pnt_scalor *(seq_lbl_lines/2.0)) + b
+            xx=u/equ_slope + equ_x_offset
+            yy=u
+
+            x_txt = xx
+            y_txt = yy
 
         # BRING ANNOTATIONS INSIDE THE MARGINS OF THE PLOT
         while y_txt > lim_y_high:
@@ -704,15 +736,14 @@ def plot_data1(df, x, y, z, point_labels,  **kwargs):
 
         pnt_coords = (x_thr, y_exp)
         text_coords = (x_txt, y_txt)
-        rad = -0.1 if below_line else 0.1
 
         texts.append(plt.annotate(pnt_lbl, 
                     xy=pnt_coords, xytext=text_coords, 
-                    # verticalalignment='center', horizontalalignment='right', 
+                    verticalalignment=valign, horizontalalignment=halign, 
                     size=7, color='black', weight='light',
                     arrowprops={"arrowstyle":"-|>, widthA=.4, widthB=.4",
                                 "connectionstyle":f"arc3,rad={rad}",
-                                "color":"gray", "alpha":0.3
+                                "color":"gray", "alpha":0.2
                     })
         )
 
@@ -725,6 +756,7 @@ def plot_data1(df, x, y, z, point_labels,  **kwargs):
     #     autoalign='y', avoid_points=False, avoid_self=False,
     #     only_move={'points':'', 'text':'xy', 'objects':''})
     
+
 
     # LEGEND
     handles, labels  =  ax.get_legend_handles_labels() # get legend text  
