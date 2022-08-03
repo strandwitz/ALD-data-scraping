@@ -426,6 +426,9 @@ def plot_data1(df, x, y, z, point_labels,  **kwargs):
         rad = 0
         halign = "center"
         valign = "center"
+        text_weight = "normal"
+        text_color = "black"
+        arrow_color = "gray"
 
         # # ADJUST TEXT PLACEMENT OFFSETS
 
@@ -436,50 +439,68 @@ def plot_data1(df, x, y, z, point_labels,  **kwargs):
             # mmm=1.7
 
             slider = 0.0
+            y_scatter=0
             equ_x_offset=8.5 # x offset
-            pnt_scalor=2.0 # expansion scale
+            pnt_scalor=1.0 # expansion scale
             y_line=0.5 # line to expand away from
-            equ_slope=1.7 # slope
+            equ_slope=1.15 # slope
+
+
+            halign = "center"
+            valign = "bottom"
+            flip_arrow = False
 
             # even = ~((seq_lbl_lines%2) or -1)
             if oneline:
-                print(seq_lbl_lines, y_exp, pnt_lbl)
-                equ_x_offset=8.5 # x offset
-                pnt_scalor=2.0 # expansion scale
+                # print(seq_lbl_lines, y_exp, pnt_lbl)
+                equ_x_offset=7.3 # x offset
+                scatter_shift=0
+                y_scatter = ((seq_lbl_lines+scatter_shift)%5*0.55)
+                # flip_arrow=True
+                # pnt_scalor=2.0 # expansion scale
                 # y_line=1.0 # line to expand away from
-                # equ_slope=mmm # slope
+                equ_slope=1.5 # slope
 
-                halign = "left"
-                valign = "center"
+                # halign = "left"
+                valign = "top"
 
             elif sm_twolines:
                 # print(seq_lbl_lines, y_exp, pnt_lbl)
-                equ_x_offset=11.0 # x offset
-                pnt_scalor=2.5 # expansion scale
+                equ_x_offset=12.8 # x offset
+                y_scatter = (seq_lbl_lines%3*1.2)
+                equ_slope=3.0 # slope
+                # pnt_scalor=2.5 # expansion scale
                 # y_line=0.5 # line to expand away from
                 # equ_slope=mmm # slope
 
                 # rad = -0.05
-                halign = "left"
+                # halign = "left"
                 valign = "top"
 
             elif lg_twolines:
-                equ_x_offset=14.0 # x offset
-                pnt_scalor=2.5 # expansion scale
+                equ_x_offset=21 # x offset
+                y_scatter = (seq_lbl_lines%4*-1.25)
+                equ_slope=5.0 # slope
+
+                # pnt_scalor=2.5 # expansion scale
                 # y_line=0.5 # line to expand away from
-                # equ_slope=mmm # slope
 
                 # rad = -0.05
-                halign = "left"
-                valign = "center"
+                # halign = "left"
+                valign = "top"
 
 
-            y_base_values = seq_lbl_lines/2.0
+            y_base_values = x_thr
             b=y_line * (1-pnt_scalor)
             u=(pnt_scalor *(y_base_values)) + b
 
-            xx=u/equ_slope + equ_x_offset
-            yy=u
+            yy=u/equ_slope + equ_x_offset + y_scatter
+            xx=u
+
+            if flip_arrow:
+                yy=u/equ_slope + (-1*equ_x_offset) + y_scatter
+                # xx, yy = yy, xx
+                # yy = -yy
 
             x_txt = xx + slider
             y_txt = yy + slider
@@ -490,50 +511,55 @@ def plot_data1(df, x, y, z, point_labels,  **kwargs):
 
             halign = "center"
             valign = "bottom"
+            # text_weight = "bold"
+            text_color = "red"
+            arrow_color = "red"
 
             slider=0
             y_scatter=0
             equ_y_offset=3.5 # x offset
             pnt_scalor=1.0 # expansion scale
             x_line=0.5 # line to expand away from
-            equ_slope=1.0 # slope
+            equ_slope=1.1 # slope
 
             # even = ~((seq_lbl_lines%2) or -1)
             if oneline:
-                print(seq_lbl_lines, y_exp, pnt_lbl)
-                equ_y_offset=2.5 # x offset
-                y_scatter = (seq_lbl_lines%2)
+                # print(seq_lbl_lines, y_exp, pnt_lbl)
+                equ_y_offset=1.5 # x offset
+                y_scatter = (seq_lbl_lines%2 * 0.75)
                 # slider=1.0
                 # pnt_scalor=1.0 # expansion scale
                 # x_line=1.0 # line to expand away from
-                # equ_slope=mmm # slope
+                equ_slope=0.95 # slope
 
                 # halign = "right"
-                # valign = "center"
+                valign = "bottom"
 
             elif sm_twolines:
-                # print(seq_lbl_lines, y_exp, pnt_lbl)
-                equ_y_offset=6.0 # x offset
-                y_scatter = (seq_lbl_lines%3*1.5)
+                print(seq_lbl_lines, y_exp, pnt_lbl) # ON
+                equ_y_offset=5.4 # x offset
+                scatter_shift = 0
+                y_scatter = ((seq_lbl_lines+scatter_shift)%2 * -1.2)
                 # slider=5.0
                 # pnt_scalor=4.0 # expansion scale
                 # x_line=2.0 # line to expand away from
-                # equ_slope=mmm # slope
+                equ_slope=1.3 # slope
 
                 # rad = -0.05
                 # halign = "center"
-                # valign = "top"
+                valign = "bottom"
 
             elif lg_twolines:
-                equ_y_offset=12.0 # x offset
-                y_scatter = (seq_lbl_lines%3*2.0)
+                equ_y_offset=12.4 # x offset
+                scatter_shift = 1
+                y_scatter = ((seq_lbl_lines+scatter_shift)%3*1.31)
                 # pnt_scalor=2.5 # expansion scale
                 # x_line=0.5 # line to expand away from
-                # equ_slope=mmm # slope
+                equ_slope=2.8 # slope
 
                 # rad = -0.05
                 # halign = "left"
-                # valign = "bottom"
+                valign = "bottom"
 
             x_base_values = x_thr
             b=x_line * (1-pnt_scalor)
@@ -593,10 +619,10 @@ def plot_data1(df, x, y, z, point_labels,  **kwargs):
         texts.append(plt.annotate(pnt_lbl, 
                     xy=pnt_coords, xytext=text_coords, 
                     verticalalignment=valign, horizontalalignment=halign, 
-                    size=7, color='black', weight='light',
+                    size=7, color=text_color, weight=text_weight,
                     arrowprops={"arrowstyle":"-|>, widthA=.4, widthB=.4",
                                 "connectionstyle":f"arc3,rad={rad}",
-                                "color":"gray", "alpha":0.2
+                                "color":arrow_color, "alpha":0.2
                     })
         )
 
