@@ -489,19 +489,21 @@ def plot_data1(df, x, y, z, point_labels,  **kwargs):
             y_txt = 0
 
             halign = "center"
-            valign = "center"
+            valign = "bottom"
 
             slider=0
+            y_scatter=0
             equ_y_offset=3.5 # x offset
-            pnt_scalor=2.0 # expansion scale
+            pnt_scalor=1.0 # expansion scale
             x_line=0.5 # line to expand away from
             equ_slope=1.0 # slope
 
             # even = ~((seq_lbl_lines%2) or -1)
             if oneline:
                 print(seq_lbl_lines, y_exp, pnt_lbl)
-                equ_y_offset=3.5 # x offset
-                slider=1.0
+                equ_y_offset=2.5 # x offset
+                y_scatter = (seq_lbl_lines%2)
+                # slider=1.0
                 # pnt_scalor=1.0 # expansion scale
                 # x_line=1.0 # line to expand away from
                 # equ_slope=mmm # slope
@@ -511,10 +513,11 @@ def plot_data1(df, x, y, z, point_labels,  **kwargs):
 
             elif sm_twolines:
                 # print(seq_lbl_lines, y_exp, pnt_lbl)
-                equ_y_offset=7.0 # x offset
-                slider=5.0
-                pnt_scalor=4.0 # expansion scale
-                x_line=2.0 # line to expand away from
+                equ_y_offset=6.0 # x offset
+                y_scatter = (seq_lbl_lines%3*1.5)
+                # slider=5.0
+                # pnt_scalor=4.0 # expansion scale
+                # x_line=2.0 # line to expand away from
                 # equ_slope=mmm # slope
 
                 # rad = -0.05
@@ -522,21 +525,22 @@ def plot_data1(df, x, y, z, point_labels,  **kwargs):
                 # valign = "top"
 
             elif lg_twolines:
-                equ_y_offset=11.0 # x offset
-                pnt_scalor=2.5 # expansion scale
+                equ_y_offset=12.0 # x offset
+                y_scatter = (seq_lbl_lines%3*2.0)
+                # pnt_scalor=2.5 # expansion scale
                 # x_line=0.5 # line to expand away from
                 # equ_slope=mmm # slope
 
                 # rad = -0.05
                 # halign = "left"
-                # valign = "center"
+                # valign = "bottom"
 
-            x_base_values = seq_lbl_lines/2.0
+            x_base_values = x_thr
             b=x_line * (1-pnt_scalor)
             u=(pnt_scalor *(x_base_values)) + b
 
             xx=u
-            yy=u/equ_slope + equ_y_offset
+            yy=u/equ_slope + equ_y_offset + y_scatter
 
             x_txt = xx + slider
             y_txt = yy + slider
