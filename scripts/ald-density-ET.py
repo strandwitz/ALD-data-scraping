@@ -169,10 +169,11 @@ def create_latex_labels(label, bold=False):
     for lbl in lbls:
         lbl = str(lbl)
         nlbl =  re.sub(r'([a-zA-Z])(\d+)', r'\1_{\2}',lbl)
+        nodash = not("-" in lbl)
         if bold:
-            nlbl = lbl if (lbl==nlbl) else rf"$\mathbf{{{nlbl}}}$"
+            nlbl = lbl if (lbl==nlbl and nodash) else rf"$\mathbf{{{nlbl}}}$"
         else:
-            nlbl = lbl if (lbl==nlbl) else f"${nlbl}$"
+            nlbl = lbl if (lbl==nlbl and nodash) else f"${nlbl}$"
         new_label.append(nlbl)
 
     label = " ".join(new_label)
@@ -459,23 +460,23 @@ def plot_data1(df, x, y, z, point_labels,  **kwargs):
             # even = ~((seq_lbl_lines%2) or -1)
             if oneline:
                 # print(seq_lbl_lines, y_exp, pnt_lbl)
-                equ_x_offset=7.0 # x offset
-                scatter_shift=8
-                y_scatter = ((seq_lbl_lines+scatter_shift)%9*0.38)
+                equ_x_offset=5.0 # x offset
+                scatter_shift=2
+                y_scatter = ((seq_lbl_lines+scatter_shift)%9*0.45)
                 # flip_arrow=True
                 # pnt_scalor=2.0 # expansion scale
                 # y_line=1.0 # line to expand away from
-                equ_slope=2.0 # slope
+                equ_slope=1.0 # slope
 
                 # halign = "left"
                 valign = "bottom"
 
             elif sm_twolines:
                 # print(seq_lbl_lines, y_exp, pnt_lbl)
-                equ_x_offset=11.0 # x offset
-                scatter_shift=1
-                y_scatter = ((seq_lbl_lines+scatter_shift)%3*1.0)
-                equ_slope=2.0 # slope
+                equ_x_offset=4.0 # x offset
+                # scatter_shift=1
+                # y_scatter = ((seq_lbl_lines+scatter_shift)%3*1.0)
+                equ_slope=1.0 # slope
                 # pnt_scalor=2.5 # expansion scale
                 # y_line=0.5 # line to expand away from
                 # equ_slope=mmm # slope
@@ -533,21 +534,21 @@ def plot_data1(df, x, y, z, point_labels,  **kwargs):
 
             # even = ~((seq_lbl_lines%2) or -1)
             if oneline:
-                # print(seq_lbl_lines, y_exp, pnt_lbl)
-                equ_y_offset=1.35 # x offset
-                scatter_shift=1
-                y_scatter = ((seq_lbl_lines+scatter_shift)%5 * 0.25)
+                print(seq_lbl_lines, y_exp, pnt_lbl)
+                equ_y_offset=2.25 # x offset
+                scatter_shift=4
+                y_scatter = ((seq_lbl_lines+scatter_shift)%5 * 0.3)
                 # slider=1.0
                 # pnt_scalor=1.0 # expansion scale
                 # x_line=1.0 # line to expand away from
-                equ_slope=0.97 # slope
+                equ_slope=1.0 # slope
 
                 # halign = "right"
                 valign = "bottom"
 
             elif sm_twolines:
-                print(seq_lbl_lines, y_exp, pnt_lbl) # ON
-                equ_y_offset=3.5 # x offset
+                # print(seq_lbl_lines, y_exp, pnt_lbl) # ON
+                equ_y_offset=1.75 # x offset
                 scatter_shift = 2
                 y_scatter = ((seq_lbl_lines+scatter_shift)%3 * 0.7)
                 # slider=5.0
@@ -560,7 +561,7 @@ def plot_data1(df, x, y, z, point_labels,  **kwargs):
                 valign = "bottom"
 
             elif lg_twolines:
-                equ_y_offset=8.7 # x offset
+                equ_y_offset=9.75 # x offset
                 scatter_shift = 4
                 y_scatter = ((seq_lbl_lines+scatter_shift)%5 * 1.0)
                 # pnt_scalor=2.5 # expansion scale
