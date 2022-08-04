@@ -313,7 +313,7 @@ def plot_data1(df, x, y, z, point_labels,  **kwargs):
 
     # PLOT LABELS
     bold_labels = True
-    highlight_labels_above = False
+    highlight_labels_above = True
 
     df_lbls = df.loc[:, [x, y, z, point_labels]]
     df_lbls.sort_values(by=[x,y], ascending=[True,True], inplace=True)
@@ -660,7 +660,7 @@ def plot_data1(df, x, y, z, point_labels,  **kwargs):
 
 fig2 = plot_data1(df_merged, x=density_thr, y=density_exp, z=key, point_labels="Label", units=density_units)
 
-fig2.savefig('plots/plotDensities-5.png', dpi=300, bbox_inches="tight")
+fig2.savefig('plots/plotDensities-4.png', dpi=300, bbox_inches="tight")
 
 # plt.show()
 
