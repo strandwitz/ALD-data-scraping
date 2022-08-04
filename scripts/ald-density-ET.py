@@ -313,6 +313,8 @@ def plot_data1(df, x, y, z, point_labels,  **kwargs):
 
     # PLOT LABELS
     bold_labels = True
+    highlight_labels_above = True
+
     df_lbls = df.loc[:, [x, y, z, point_labels]]
     df_lbls.sort_values(by=[x,y], ascending=[True,True], inplace=True)
     df_lbls.drop_duplicates(subset=[x, z], keep='last', inplace=True)
@@ -517,9 +519,10 @@ def plot_data1(df, x, y, z, point_labels,  **kwargs):
 
             halign = "center"
             valign = "bottom"
-            # text_weight = "bold"
-            text_color = "red"
-            arrow_color = "red"
+
+            if highlight_labels_above:
+                text_color = "red"
+                arrow_color = "red"
 
             slider=0
             y_scatter=0
@@ -531,12 +534,13 @@ def plot_data1(df, x, y, z, point_labels,  **kwargs):
             # even = ~((seq_lbl_lines%2) or -1)
             if oneline:
                 # print(seq_lbl_lines, y_exp, pnt_lbl)
-                equ_y_offset=1.4 # x offset
-                y_scatter = (seq_lbl_lines%2 * 0.75)
+                equ_y_offset=1.35 # x offset
+                scatter_shift=1
+                y_scatter = ((seq_lbl_lines+scatter_shift)%5 * 0.25)
                 # slider=1.0
                 # pnt_scalor=1.0 # expansion scale
                 # x_line=1.0 # line to expand away from
-                equ_slope=0.95 # slope
+                equ_slope=0.97 # slope
 
                 # halign = "right"
                 valign = "bottom"
@@ -558,7 +562,7 @@ def plot_data1(df, x, y, z, point_labels,  **kwargs):
             elif lg_twolines:
                 equ_y_offset=8.7 # x offset
                 scatter_shift = 4
-                y_scatter = ((seq_lbl_lines+scatter_shift)%5*1.0)
+                y_scatter = ((seq_lbl_lines+scatter_shift)%5 * 1.0)
                 # pnt_scalor=2.5 # expansion scale
                 # x_line=0.5 # line to expand away from
                 equ_slope=2.8 # slope
