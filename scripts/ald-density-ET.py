@@ -159,7 +159,7 @@ ald_print_info(df_thr, label="DF THEORETICAL", vc=[False, key])
 ald_print_info(df_merged, label="DF MERGED", vc=[False, key], head=[False, 0], tail=[True, 10])
 
 
-def create_latex_labels(label):
+def create_latex_labels(label, bold=False):
     if type(label) is float and np.isnan(label):
         return label
 
@@ -169,7 +169,10 @@ def create_latex_labels(label):
     for lbl in lbls:
         lbl = str(lbl)
         nlbl =  re.sub(r'([a-zA-Z])(\d+)', r'\1_{\2}',lbl)
-        nlbl = lbl if (lbl==nlbl) else f"${nlbl}$"
+        if bold:
+            nlbl = lbl if (lbl==nlbl) else rf"$\mathbf{{{nlbl}}}$"
+        else:
+            nlbl = lbl if (lbl==nlbl) else f"${nlbl}$"
         new_label.append(nlbl)
 
     label = " ".join(new_label)
@@ -286,7 +289,7 @@ def plot_swarm(df, x, y, z):
 def plot_data1(df, x, y, z, point_labels,  **kwargs):
     ald_print_info(df, label="DF PLOTTING")
 
-    fig, ax = plt.subplots(figsize=(10,10)) # figsize=(6, 7)
+    fig, ax = plt.subplots(figsize=(13,10)) # figsize=(6, 7)
 
     order_z = list(df[z].unique())
 
@@ -309,6 +312,7 @@ def plot_data1(df, x, y, z, point_labels,  **kwargs):
 
 
     # PLOT LABELS
+    bold_labels = True
     df_lbls = df.loc[:, [x, y, z, point_labels]]
     df_lbls.sort_values(by=[x,y], ascending=[True,True], inplace=True)
     df_lbls.drop_duplicates(subset=[x, z], keep='last', inplace=True)
@@ -321,7 +325,7 @@ def plot_data1(df, x, y, z, point_labels,  **kwargs):
         # print(df_lbls[lbl_col].head())
         # df_lbls[lbl_col] = df_lbls[lbl_col].apply(create_latex_labels)
     
-    df_lbls[point_labels] = df_lbls[point_labels].apply(create_latex_labels)
+    df_lbls[point_labels] = df_lbls[point_labels].apply(create_latex_labels, bold=bold_labels)
     # df_lbls[point_labels[0]] = df_lbls[point_labels[0]].apply(create_latex_labels)
 
     # df_lbls.loc[filt_material_in_phase, ["label"]] = df_lbls[point_labels[1]] # NOTE: may need to split str if phase has multiple annotations
@@ -426,7 +430,7 @@ def plot_data1(df, x, y, z, point_labels,  **kwargs):
         rad = 0
         halign = "center"
         valign = "center"
-        text_weight = "normal"
+        text_weight = "bold" if bold_labels else "normal"
         text_color = "black"
         arrow_color = "gray"
 
@@ -650,7 +654,7 @@ def plot_data1(df, x, y, z, point_labels,  **kwargs):
 
 fig2 = plot_data1(df_merged, x=density_thr, y=density_exp, z=key, point_labels="Label", units=density_units)
 
-fig2.savefig('plots/plotDensities-4.png', dpi=200, bbox_inches="tight")
+fig2.savefig('plots/plotDensities-4.png', dpi=300, bbox_inches="tight")
 
 # plt.show()
 
