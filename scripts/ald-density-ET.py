@@ -287,6 +287,243 @@ def plot_swarm(df, x, y, z):
 
     return fig
 
+def place_labels_all(pnt_lbl, x_thr, y_thr, y_exp, seq_labels_all, flags, visuals):
+
+    below_line, highlight_labels_above, oneline, sm_twolines, lg_twolines, manylines, *more = flags
+    valign, halign, text_color, arrow_color, *other = visuals
+
+    x_txt = x_thr
+    y_txt = 0
+    # mmm=1.7
+
+    slider = 0.0
+    y_scatter=0
+    equ_x_offset=8.5 # x offset
+    pnt_scalor=1.0 # expansion scale
+    y_line=0.5 # line to expand away from
+    equ_slope=1.15 # slope
+
+
+    halign = "center"
+    valign = "bottom"
+    flip_arrow = False
+
+    # even = ~((seq_labels_all%2) or -1)
+    if oneline:
+        # print(seq_labels_all, y_exp, pnt_lbl)
+        equ_x_offset=3.25 # x offset
+        scatter_shift=6
+        y_scatter = ((seq_labels_all+scatter_shift)%13*0.45)
+        # flip_arrow=True
+        # pnt_scalor=2.0 # expansion scale
+        # y_line=1.0 # line to expand away from
+        equ_slope=1.0 # slope
+
+        # halign = "left"
+        valign = "bottom"
+
+    elif sm_twolines:
+        # print(seq_labels_all, y_exp, pnt_lbl)
+        equ_x_offset=2.0 # x offset
+        # scatter_shift=1
+        # y_scatter = ((seq_labels_all+scatter_shift)%3*1.0)
+        equ_slope=1.0 # slope
+        # pnt_scalor=2.5 # expansion scale
+        # y_line=0.5 # line to expand away from
+        # equ_slope=mmm # slope
+
+        # rad = -0.05
+        # halign = "left"
+        valign = "bottom"
+
+    elif lg_twolines:
+        equ_x_offset=10.5 # x offset
+        scatter_shift=3
+        y_scatter = ((seq_labels_all+scatter_shift)%7*0.9)
+        equ_slope=1.0 # slope
+
+        # pnt_scalor=2.5 # expansion scale
+        # y_line=0.5 # line to expand away from
+
+        # rad = -0.05
+        # halign = "left"
+        valign = "bottom"
+
+
+    y_base_values = x_thr
+    b=y_line * (1-pnt_scalor)
+    u=(pnt_scalor *(y_base_values)) + b
+
+    yy=u/equ_slope + equ_x_offset + y_scatter
+    xx=u
+
+    if flip_arrow:
+        yy=u/equ_slope + (-1*equ_x_offset) + y_scatter
+        # xx, yy = yy, xx
+        # yy = -yy
+
+    x_txt = xx + slider
+    y_txt = yy + slider
+
+
+    if highlight_labels_above and not(below_line):
+        text_color = "red"
+        arrow_color = "red"
+
+    return x_txt, y_txt, valign, halign, text_color, arrow_color
+
+
+
+def place_labels_ab(pnt_lbl, x_thr, y_thr, y_exp, seq_lbl_lines, flags, visuals):
+
+    below_line, highlight_labels_above, oneline, sm_twolines, lg_twolines, manylines, *more = flags
+    valign, halign, text_color, arrow_color, *other = visuals
+
+    if below_line:
+        x_txt = x_thr
+        y_txt = 0
+        # mmm=1.7
+
+        slider = 0.0
+        y_scatter=0
+        equ_x_offset=8.5 # x offset
+        pnt_scalor=1.0 # expansion scale
+        y_line=0.5 # line to expand away from
+        equ_slope=1.15 # slope
+
+
+        halign = "center"
+        valign = "bottom"
+        flip_arrow = False
+
+        # even = ~((seq_lbl_lines%2) or -1)
+        if oneline:
+            # print(seq_lbl_lines, y_exp, pnt_lbl)
+            equ_x_offset=5.0 # x offset
+            scatter_shift=2
+            y_scatter = ((seq_lbl_lines+scatter_shift)%9*0.45)
+            # flip_arrow=True
+            # pnt_scalor=2.0 # expansion scale
+            # y_line=1.0 # line to expand away from
+            equ_slope=1.0 # slope
+
+            # halign = "left"
+            valign = "bottom"
+
+        elif sm_twolines:
+            # print(seq_lbl_lines, y_exp, pnt_lbl)
+            equ_x_offset=4.0 # x offset
+            # scatter_shift=1
+            # y_scatter = ((seq_lbl_lines+scatter_shift)%3*1.0)
+            equ_slope=1.0 # slope
+            # pnt_scalor=2.5 # expansion scale
+            # y_line=0.5 # line to expand away from
+            # equ_slope=mmm # slope
+
+            # rad = -0.05
+            # halign = "left"
+            valign = "bottom"
+
+        elif lg_twolines:
+            equ_x_offset=14.5 # x offset
+            scatter_shift=2
+            y_scatter = ((seq_lbl_lines+scatter_shift)%4*0.95)
+            equ_slope=2.25 # slope
+
+            # pnt_scalor=2.5 # expansion scale
+            # y_line=0.5 # line to expand away from
+
+            # rad = -0.05
+            # halign = "left"
+            valign = "bottom"
+
+
+        y_base_values = x_thr
+        b=y_line * (1-pnt_scalor)
+        u=(pnt_scalor *(y_base_values)) + b
+
+        yy=u/equ_slope + equ_x_offset + y_scatter
+        xx=u
+
+        if flip_arrow:
+            yy=u/equ_slope + (-1*equ_x_offset) + y_scatter
+            # xx, yy = yy, xx
+            # yy = -yy
+
+        x_txt = xx + slider
+        y_txt = yy + slider
+
+    else: # above line
+        x_txt = x_thr
+        y_txt = 0
+
+        halign = "center"
+        valign = "bottom"
+
+        if highlight_labels_above:
+            text_color = "red"
+            arrow_color = "red"
+
+        slider=0
+        y_scatter=0
+        equ_y_offset=3.5 # x offset
+        pnt_scalor=1.0 # expansion scale
+        x_line=0.5 # line to expand away from
+        equ_slope=1.1 # slope
+
+        # even = ~((seq_lbl_lines%2) or -1)
+        if oneline:
+            print(seq_lbl_lines, y_exp, pnt_lbl)
+            equ_y_offset=2.25 # x offset
+            scatter_shift=4
+            y_scatter = ((seq_lbl_lines+scatter_shift)%5 * 0.3)
+            # slider=1.0
+            # pnt_scalor=1.0 # expansion scale
+            # x_line=1.0 # line to expand away from
+            equ_slope=1.0 # slope
+
+            # halign = "right"
+            valign = "bottom"
+
+        elif sm_twolines:
+            # print(seq_lbl_lines, y_exp, pnt_lbl) # ON
+            equ_y_offset=1.75 # x offset
+            scatter_shift = 2
+            y_scatter = ((seq_lbl_lines+scatter_shift)%3 * 0.7)
+            # slider=5.0
+            # pnt_scalor=4.0 # expansion scale
+            # x_line=2.0 # line to expand away from
+            equ_slope=1.2 # slope
+
+            # rad = -0.05
+            # halign = "center"
+            valign = "bottom"
+
+        elif lg_twolines:
+            equ_y_offset=9.75 # x offset
+            scatter_shift = 4
+            y_scatter = ((seq_lbl_lines+scatter_shift)%5 * 1.0)
+            # pnt_scalor=2.5 # expansion scale
+            # x_line=0.5 # line to expand away from
+            equ_slope=2.8 # slope
+
+            # rad = -0.05
+            # halign = "left"
+            valign = "bottom"
+
+        x_base_values = x_thr
+        b=x_line * (1-pnt_scalor)
+        u=(pnt_scalor *(x_base_values)) + b
+
+        xx=u
+        yy=u/equ_slope + equ_y_offset + y_scatter
+
+        x_txt = xx + slider
+        y_txt = yy + slider
+
+
+    return x_txt, y_txt, valign, halign, text_color, arrow_color
+
 def plot_data1(df, x, y, z, point_labels,  **kwargs):
     ald_print_info(df, label="DF PLOTTING")
 
@@ -345,6 +582,7 @@ def plot_data1(df, x, y, z, point_labels,  **kwargs):
     df_lbls["below_line"] = df_lbls[x] > df_lbls[y]
     df_lbls["seq_above_below"] = df_lbls.groupby("below_line").cumcount()+1
     df_lbls["seq_lbl_lines"] = df_lbls.groupby(["below_line", "label_lines", "len_twolines"]).cumcount()+1
+    df_lbls["seq_labels_all"] = df_lbls.groupby(["label_lines", "len_twolines"]).cumcount()+1
 
     # df_lbls["label"] = df_lbls[point_labels[1]]
     # else:
@@ -365,6 +603,7 @@ def plot_data1(df, x, y, z, point_labels,  **kwargs):
 
         seq_above_below = df_lbls["seq_above_below"].iloc[line] # sequence above and below line
         seq_lbl_lines = df_lbls["seq_lbl_lines"].iloc[line] # sequence number of lines
+        seq_labels_all = df_lbls["seq_labels_all"].iloc[line] # sequence number of lines
 
 
         # GET LABEL TEXT
@@ -438,149 +677,10 @@ def plot_data1(df, x, y, z, point_labels,  **kwargs):
         arrow_color = "gray"
 
         # # ADJUST TEXT PLACEMENT OFFSETS
-
-
-        if below_line:
-            x_txt = x_thr
-            y_txt = 0
-            # mmm=1.7
-
-            slider = 0.0
-            y_scatter=0
-            equ_x_offset=8.5 # x offset
-            pnt_scalor=1.0 # expansion scale
-            y_line=0.5 # line to expand away from
-            equ_slope=1.15 # slope
-
-
-            halign = "center"
-            valign = "bottom"
-            flip_arrow = False
-
-            # even = ~((seq_lbl_lines%2) or -1)
-            if oneline:
-                # print(seq_lbl_lines, y_exp, pnt_lbl)
-                equ_x_offset=5.0 # x offset
-                scatter_shift=2
-                y_scatter = ((seq_lbl_lines+scatter_shift)%9*0.45)
-                # flip_arrow=True
-                # pnt_scalor=2.0 # expansion scale
-                # y_line=1.0 # line to expand away from
-                equ_slope=1.0 # slope
-
-                # halign = "left"
-                valign = "bottom"
-
-            elif sm_twolines:
-                # print(seq_lbl_lines, y_exp, pnt_lbl)
-                equ_x_offset=4.0 # x offset
-                # scatter_shift=1
-                # y_scatter = ((seq_lbl_lines+scatter_shift)%3*1.0)
-                equ_slope=1.0 # slope
-                # pnt_scalor=2.5 # expansion scale
-                # y_line=0.5 # line to expand away from
-                # equ_slope=mmm # slope
-
-                # rad = -0.05
-                # halign = "left"
-                valign = "bottom"
-
-            elif lg_twolines:
-                equ_x_offset=14.5 # x offset
-                scatter_shift=2
-                y_scatter = ((seq_lbl_lines+scatter_shift)%4*0.95)
-                equ_slope=2.25 # slope
-
-                # pnt_scalor=2.5 # expansion scale
-                # y_line=0.5 # line to expand away from
-
-                # rad = -0.05
-                # halign = "left"
-                valign = "bottom"
-
-
-            y_base_values = x_thr
-            b=y_line * (1-pnt_scalor)
-            u=(pnt_scalor *(y_base_values)) + b
-
-            yy=u/equ_slope + equ_x_offset + y_scatter
-            xx=u
-
-            if flip_arrow:
-                yy=u/equ_slope + (-1*equ_x_offset) + y_scatter
-                # xx, yy = yy, xx
-                # yy = -yy
-
-            x_txt = xx + slider
-            y_txt = yy + slider
-
-        else: # above line
-            x_txt = x_thr
-            y_txt = 0
-
-            halign = "center"
-            valign = "bottom"
-
-            if highlight_labels_above:
-                text_color = "red"
-                arrow_color = "red"
-
-            slider=0
-            y_scatter=0
-            equ_y_offset=3.5 # x offset
-            pnt_scalor=1.0 # expansion scale
-            x_line=0.5 # line to expand away from
-            equ_slope=1.1 # slope
-
-            # even = ~((seq_lbl_lines%2) or -1)
-            if oneline:
-                print(seq_lbl_lines, y_exp, pnt_lbl)
-                equ_y_offset=2.25 # x offset
-                scatter_shift=4
-                y_scatter = ((seq_lbl_lines+scatter_shift)%5 * 0.3)
-                # slider=1.0
-                # pnt_scalor=1.0 # expansion scale
-                # x_line=1.0 # line to expand away from
-                equ_slope=1.0 # slope
-
-                # halign = "right"
-                valign = "bottom"
-
-            elif sm_twolines:
-                # print(seq_lbl_lines, y_exp, pnt_lbl) # ON
-                equ_y_offset=1.75 # x offset
-                scatter_shift = 2
-                y_scatter = ((seq_lbl_lines+scatter_shift)%3 * 0.7)
-                # slider=5.0
-                # pnt_scalor=4.0 # expansion scale
-                # x_line=2.0 # line to expand away from
-                equ_slope=1.2 # slope
-
-                # rad = -0.05
-                # halign = "center"
-                valign = "bottom"
-
-            elif lg_twolines:
-                equ_y_offset=9.75 # x offset
-                scatter_shift = 4
-                y_scatter = ((seq_lbl_lines+scatter_shift)%5 * 1.0)
-                # pnt_scalor=2.5 # expansion scale
-                # x_line=0.5 # line to expand away from
-                equ_slope=2.8 # slope
-
-                # rad = -0.05
-                # halign = "left"
-                valign = "bottom"
-
-            x_base_values = x_thr
-            b=x_line * (1-pnt_scalor)
-            u=(pnt_scalor *(x_base_values)) + b
-
-            xx=u
-            yy=u/equ_slope + equ_y_offset + y_scatter
-
-            x_txt = xx + slider
-            y_txt = yy + slider
+        flags = [below_line, highlight_labels_above, oneline, sm_twolines, lg_twolines, manylines]
+        visuals = [valign, halign, text_color, arrow_color]
+        x_txt, y_txt, valign, halign, text_color, arrow_color = place_labels_all(pnt_lbl, x_thr, y_thr, y_exp, seq_labels_all, flags, visuals)
+        # x_txt, y_txt, valign, halign, text_color, arrow_color = place_labels_ab(pnt_lbl, x_thr, y_thr, y_exp, seq_lbl_lines, flags, visuals)
 
         # BRING ANNOTATIONS INSIDE THE MARGINS OF THE PLOT
         while y_txt > lim_y_high:
@@ -661,7 +761,7 @@ def plot_data1(df, x, y, z, point_labels,  **kwargs):
 
 fig2 = plot_data1(df_merged, x=density_thr, y=density_exp, z=key, point_labels="Label", units=density_units)
 
-fig2.savefig('plots/plotDensities-4.png', dpi=300, bbox_inches="tight")
+fig2.savefig('plots/plotDensities-6.png', dpi=300, bbox_inches="tight")
 
 # plt.show()
 
