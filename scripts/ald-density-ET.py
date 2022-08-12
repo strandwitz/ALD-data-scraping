@@ -135,6 +135,12 @@ cols = ([density_exp], [density_thr, "Phase", "Label"])
 df_merged = ald_merge_df(df_exp, df_thr, key, cols, view_data=False)
 
 
+# FILTERS
+ELEMENTS_TO_EXCLUDE = ["Pt"]
+ELEMENTS_TO_INCLUDE = []
+filt_exclude = ~df_merged["Material"].str.contains("|".join(ELEMENTS_TO_EXCLUDE))
+filt_include = df_merged["Material"].str.contains("|".join(ELEMENTS_TO_INCLUDE))
+df_merged = df_merged.loc[filt_exclude & filt_include]
 
 # SORT VALUES
 def sort_valuecounts(df, key):
