@@ -138,6 +138,21 @@ df_merged = ald_merge_df(df_exp, df_thr, key, cols, view_data=False)
 # FILTERS
 ELEMENTS_TO_EXCLUDE = ["Pt"]
 ELEMENTS_TO_INCLUDE = []
+
+interactive = True
+if interactive:
+    print()
+    user_wants_filter = input("Would you like to filter for an element? ")
+    if user_wants_filter == "yes" or user_wants_filter == "y":
+        user_element = ""
+        while user_element is not None:
+            user_element = input("Enter an element symbol (or press enter to exit): ")
+            if user_element == "":
+                break
+
+            ELEMENTS_TO_INCLUDE.append(user_element)
+
+
 filt_exclude = ~df_merged["Material"].str.contains("|".join(ELEMENTS_TO_EXCLUDE))
 filt_include = df_merged["Material"].str.contains("|".join(ELEMENTS_TO_INCLUDE))
 df_merged = df_merged.loc[filt_exclude & filt_include]
