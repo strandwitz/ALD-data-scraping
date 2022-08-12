@@ -311,13 +311,13 @@ def place_labels_all(pnt_lbl, x_thr, y_thr, y_exp, seq_labels_all, flags, visual
     # even = ~((seq_labels_all%2) or -1)
     if oneline:
         # print(seq_labels_all, y_exp, pnt_lbl)
-        equ_x_offset=3.25 # x offset
+        equ_x_offset=1 # x offset
         scatter_shift=6
-        y_scatter = ((seq_labels_all+scatter_shift)%13*0.45)
+        y_scatter = ((seq_labels_all+scatter_shift)%13*0.3)
         # flip_arrow=True
         # pnt_scalor=2.0 # expansion scale
         # y_line=1.0 # line to expand away from
-        equ_slope=1.0 # slope
+        equ_slope=1.1 # slope
 
         # halign = "left"
         valign = "bottom"
@@ -524,6 +524,75 @@ def place_labels_ab(pnt_lbl, x_thr, y_thr, y_exp, seq_lbl_lines, flags, visuals)
 
     return x_txt, y_txt, valign, halign, text_color, arrow_color
 
+def keep_labels_inside_margins(label_coords, ax, axis_margins={}):
+    x_txt, y_txt = label_coords
+
+    delta_x = ax.get_xlim()[1] - ax.get_xlim()[0]
+    delta_y = ax.get_ylim()[1] - ax.get_ylim()[0]
+
+    margin_x_high = delta_x * axis_margins.get("mxh")
+    margin_x_low = delta_x * axis_margins.get("mxl")
+    margin_y_high = delta_y * axis_margins.get("myh")
+    margin_y_low = delta_y * axis_margins.get("myl")
+
+    lim_y_low = ax.get_ylim()[0] + (margin_y_low)
+    lim_y_high = ax.get_ylim()[1] - (margin_y_high)
+
+    lim_x_low = ax.get_xlim()[0] + (margin_x_low)
+    lim_x_high = ax.get_xlim()[1] - (margin_x_high)
+
+    # create margin booleans
+    # point_in_margin_x_low = x_thr <= lim_x_low
+    # point_in_margin_x_high = x_thr >= lim_x_high
+
+    # point_in_margin_y_low = y_exp <= lim_y_low
+    # point_in_margin_y_high = y_exp >= lim_y_high
+
+
+    # BRING ANNOTATIONS INSIDE THE MARGINS OF THE PLOT
+    while y_txt > lim_y_high:
+        # print(f"\nH {y_exp+oy:.4f} > lim_y_high {lim_y_high:.4f} -- {oy}")
+        if abs(round(y_txt, 5)) <= abs(round(lim_y_high, 5)):
+            y_txt = lim_y_high
+
+        if lim_x_high < 0:
+            y_txt *= 1.01
+        else:
+            y_txt *= 0.99
+
+    while x_txt > lim_x_high:
+        # print(f"\nH {x_txt:.4f} > lim_x_high {lim_x_high:.4f} -- {ox}")
+        if abs(round(x_txt, 5)) <= abs(round(lim_x_high, 5)):
+            x_txt = lim_x_high
+
+        if lim_x_high < 0:
+            x_txt *= 1.01
+        else:
+            x_txt *= 0.99
+
+    while y_txt < lim_y_low:
+        # print(f"\nL {y_txt:.4f} < lim_y_low {lim_y_low:.4f}")
+        if abs(round(y_txt, 5)) >= abs(round(lim_y_low, 5)):
+            y_txt = lim_y_low
+
+        if lim_y_low < 0:
+            y_txt *= 0.995
+        else:
+            y_txt *= 1.005
+
+    while x_txt < lim_x_low:
+        # print(f"\nL {x_thr-ox:.4f} < lim_x_low {lim_x_low:.4f}")
+        if abs(round(x_txt, 5)) >= abs(round(lim_x_low, 5)):
+            x_txt = lim_x_low
+
+        if lim_x_low < 0:
+            x_txt *= 0.995
+        else:
+            x_txt *= 1.005
+
+
+    return [x_txt, y_txt]
+
 def plot_data1(df, x, y, z, point_labels,  **kwargs):
     ald_print_info(df, label="DF PLOTTING")
 
@@ -548,6 +617,9 @@ def plot_data1(df, x, y, z, point_labels,  **kwargs):
     ax.set_xlabel(" ".join([x, kwargs.get('units')]))
     ax.set_ylabel(" ".join([y, kwargs.get('units')]))
 
+
+
+    g1.set(ylim=(0,(df[x].max()*1.20)), xlim=(0,None))
 
     # PLOT LABELS
     bold_labels = True
@@ -620,32 +692,8 @@ def plot_data1(df, x, y, z, point_labels,  **kwargs):
 
 
         # CREATE SECTIONS FOR LABEL PLACEMENT
-        # PLOT MARGINS
-        mxh = 0.10 # 13% margins
-        mxl = 0.04 # 2% margins
-        myh = 0.04 # 6% margins
-        myl = 0.04 # 2% margins
-
         delta_x = ax.get_xlim()[1] - ax.get_xlim()[0]
         delta_y = ax.get_ylim()[1] - ax.get_ylim()[0]
-
-        margin_x_high = delta_x * mxh
-        margin_x_low = delta_x * mxl
-        margin_y_high = delta_y * myh
-        margin_y_low = delta_y * myl
-
-        lim_y_low = ax.get_ylim()[0] + (margin_y_low)
-        lim_y_high = ax.get_ylim()[1] - (margin_y_high)
-
-        lim_x_low = ax.get_xlim()[0] + (margin_x_low)
-        lim_x_high = ax.get_xlim()[1] - (margin_x_high)
-
-        # create margin booleans
-        point_in_margin_x_low = x_thr <= lim_x_low
-        point_in_margin_x_high = x_thr >= lim_x_high
-
-        point_in_margin_y_low = y_exp <= lim_y_low
-        point_in_margin_y_high = y_exp >= lim_y_high
 
 
         # PLOT SECTION X AXIS
@@ -682,46 +730,16 @@ def plot_data1(df, x, y, z, point_labels,  **kwargs):
         x_txt, y_txt, valign, halign, text_color, arrow_color = place_labels_all(pnt_lbl, x_thr, y_thr, y_exp, seq_labels_all, flags, visuals)
         # x_txt, y_txt, valign, halign, text_color, arrow_color = place_labels_ab(pnt_lbl, x_thr, y_thr, y_exp, seq_lbl_lines, flags, visuals)
 
-        # BRING ANNOTATIONS INSIDE THE MARGINS OF THE PLOT
-        while y_txt > lim_y_high:
-            # print(f"\nH {y_exp+oy:.4f} > lim_y_high {lim_y_high:.4f} -- {oy}")
-            if abs(round(y_txt, 5)) <= abs(round(lim_y_high, 5)):
-                y_txt = lim_y_high
 
-            if lim_x_high < 0:
-                y_txt *= 1.01
-            else:
-                y_txt *= 0.99
+        # PLOT MARGINS
+        axis_margins = {
+            "mxl": 0.04, # 4% margins
+            "myh": 0.04, # 4% margins
+            "mxh": 0.10, # 10% margins
+            "myl": 0.04 # 4% margins
+        }
+        x_txt, y_txt = keep_labels_inside_margins([x_txt, y_txt], ax=ax, axis_margins=axis_margins)
 
-        while x_txt > lim_x_high:
-            # print(f"\nH {x_txt:.4f} > lim_x_high {lim_x_high:.4f} -- {ox}")
-            if abs(round(x_txt, 5)) <= abs(round(lim_x_high, 5)):
-                x_txt = lim_x_high
-
-            if lim_x_high < 0:
-                x_txt *= 1.01
-            else:
-                x_txt *= 0.99
-
-        while y_txt < lim_y_low:
-            # print(f"\nL {y_txt:.4f} < lim_y_low {lim_y_low:.4f}")
-            if abs(round(y_txt, 5)) >= abs(round(lim_y_low, 5)):
-                y_txt = lim_y_low
-
-            if lim_y_low < 0:
-                y_txt *= 0.995
-            else:
-                y_txt *= 1.005
-
-        while x_txt < lim_x_low:
-            # print(f"\nL {x_thr-ox:.4f} < lim_x_low {lim_x_low:.4f}")
-            if abs(round(x_txt, 5)) >= abs(round(lim_x_low, 5)):
-                x_txt = lim_x_low
-
-            if lim_x_low < 0:
-                x_txt *= 0.995
-            else:
-                x_txt *= 1.005
 
 
         pnt_coords = (x_thr, y_exp)
@@ -761,7 +779,7 @@ def plot_data1(df, x, y, z, point_labels,  **kwargs):
 
 fig2 = plot_data1(df_merged, x=density_thr, y=density_exp, z=key, point_labels="Label", units=density_units)
 
-fig2.savefig('plots/plotDensities-6.png', dpi=300, bbox_inches="tight")
+fig2.savefig('plots/plotDensities-5.png', dpi=300, bbox_inches="tight")
 
 # plt.show()
 
