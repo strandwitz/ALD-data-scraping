@@ -315,76 +315,40 @@ def place_labels_all(pnt_lbl, x_thr, y_thr, y_exp, seq_labels_all, flags, visual
 
     x_txt = x_thr
     y_txt = 0
-    # mmm=1.7
 
-    slider = 0.0
-    y_scatter=0
-    equ_x_offset=8.5 # x offset
-    pnt_scalor=1.0 # expansion scale
-    y_line=0.5 # line to expand away from
-    equ_slope=1.15 # slope
+    # y = m x + b - m pivot
+    # pivot = x_value
+    # b = pivot + y_offset
+    # y_offset = y_value # offset of pivot point from y=x line
+    # https://www.desmos.com/calculator/69yq7p7qgk 
 
+    def line(m=1, y_offset=0, pivot=0):
+        b=pivot+y_offset
+        def fn(x):
+            return (m*x) + b - (m*pivot)
 
-    halign = "center"
-    valign = "bottom"
-    flip_arrow = False
+        return fn
 
-    # even = ~((seq_labels_all%2) or -1)
-    if oneline:
-        # print(seq_labels_all, y_exp, pnt_lbl)
-        equ_x_offset=1 # x offset
-        scatter_shift=6
-        y_scatter = ((seq_labels_all+scatter_shift)%13*0.3)
-        # flip_arrow=True
-        # pnt_scalor=2.0 # expansion scale
-        # y_line=1.0 # line to expand away from
-        equ_slope=1.1 # slope
-
-        # halign = "left"
-        valign = "bottom"
-
-    elif sm_twolines:
-        # print(seq_labels_all, y_exp, pnt_lbl)
-        equ_x_offset=2.0 # x offset
-        # scatter_shift=1
-        # y_scatter = ((seq_labels_all+scatter_shift)%3*1.0)
-        equ_slope=1.0 # slope
-        # pnt_scalor=2.5 # expansion scale
-        # y_line=0.5 # line to expand away from
-        # equ_slope=mmm # slope
-
-        # rad = -0.05
-        # halign = "left"
-        valign = "bottom"
-
-    elif lg_twolines:
-        equ_x_offset=10.5 # x offset
-        scatter_shift=3
-        y_scatter = ((seq_labels_all+scatter_shift)%7*0.9)
-        equ_slope=1.0 # slope
-
-        # pnt_scalor=2.5 # expansion scale
-        # y_line=0.5 # line to expand away from
-
-        # rad = -0.05
-        # halign = "left"
-        valign = "bottom"
+    pivot = 6.75
+    f1=line(m=0.8, y_offset=1.4, pivot=pivot)
+    f2=line(m=1.05, y_offset=1.5, pivot=pivot)
 
 
-    y_base_values = x_thr
-    b=y_line * (1-pnt_scalor)
-    u=(pnt_scalor *(y_base_values)) + b
+    halign = "right"
+    valign = "baseline"
 
-    yy=u/equ_slope + equ_x_offset + y_scatter
-    xx=u
+    x_txt = x_thr
+    # y_txt = f1(x_txt) + y_scatter
 
-    if flip_arrow:
-        yy=u/equ_slope + (-1*equ_x_offset) + y_scatter
-        # xx, yy = yy, xx
-        # yy = -yy
+    if x_thr > pivot:
+        scatter_shift=5
+        y_scatter = ((seq_labels_all+scatter_shift)%8*0.35)
+        y_txt = f1(x_txt) + y_scatter
 
-    x_txt = xx + slider
-    y_txt = yy + slider
+    else:
+        scatter_shift=11
+        y_scatter = ((seq_labels_all+scatter_shift)%12*0.35)
+        y_txt = f2(x_txt) + y_scatter
 
 
     if highlight_labels_above and not(below_line):
@@ -400,6 +364,15 @@ def place_labels_ab(pnt_lbl, x_thr, y_thr, y_exp, seq_lbl_lines, flags, visuals)
     below_line, highlight_labels_above, oneline, sm_twolines, lg_twolines, manylines, *more = flags
     valign, halign, text_color, arrow_color, *other = visuals
 
+    # y = (slope * x) + y_offset
+    # x = (y - y_offset) / slope
+    # x = (y - y_offset) / slope + x_offset
+    # y - y_offset = (x - x_offset) * slope
+    # y = (x - x_offset) * slope + y_offset
+    # y = (slope * x) + y_offset - (slope * x_offset)
+    # y = (m * x) + y_1 - (m * x_1)
+
+    # y = (slope * x) + y_offset - (slope * x_offset)
     if below_line:
         x_txt = x_thr
         y_txt = 0
@@ -495,7 +468,7 @@ def place_labels_ab(pnt_lbl, x_thr, y_thr, y_exp, seq_lbl_lines, flags, visuals)
         # even = ~((seq_lbl_lines%2) or -1)
         if oneline:
             print(seq_lbl_lines, y_exp, pnt_lbl)
-            equ_y_offset=2.25 # x offset
+            equ_y_offset=2.0 # x offset
             scatter_shift=4
             y_scatter = ((seq_lbl_lines+scatter_shift)%5 * 0.3)
             # slider=1.0
@@ -756,7 +729,7 @@ def plot_data1(df, x, y, z, point_labels,  **kwargs):
         axis_margins = {
             "mxl": 0.04, # 4% margins
             "myh": 0.04, # 4% margins
-            "mxh": 0.10, # 10% margins
+            "mxh": 0.04, # 10% margins
             "myl": 0.04 # 4% margins
         }
         x_txt, y_txt = keep_labels_inside_margins([x_txt, y_txt], ax=ax, axis_margins=axis_margins)
@@ -764,17 +737,26 @@ def plot_data1(df, x, y, z, point_labels,  **kwargs):
 
 
         pnt_coords = (x_thr, y_exp)
-        text_coords = (x_txt, y_txt)
+        text_coords = (x_txt-0.026, y_txt)
+        text_coords_arrow = (x_txt, y_txt)
+
+        opacity=1
+        lw=0.4
+        texts.append(plt.annotate("", 
+                    xy=pnt_coords, xytext=text_coords_arrow, 
+                    verticalalignment=valign, horizontalalignment=halign, 
+                    size=7, color=text_color, weight=text_weight,
+                    arrowprops=dict(arrowstyle="-|>, widthA=.4, widthB=.4",
+                                connectionstyle=f"arc3,rad={rad}", shrinkA=0,
+                                color=arrow_color, alpha=opacity, lw=lw
+                    )))
 
         texts.append(plt.annotate(pnt_lbl, 
                     xy=pnt_coords, xytext=text_coords, 
                     verticalalignment=valign, horizontalalignment=halign, 
                     size=7, color=text_color, weight=text_weight,
-                    arrowprops={"arrowstyle":"-|>, widthA=.4, widthB=.4",
-                                "connectionstyle":f"arc3,rad={rad}",
-                                "color":arrow_color, "alpha":0.2
-                    })
-        )
+                    bbox=dict(boxstyle="square,pad=0.2", fc="white", ec=arrow_color, alpha=opacity, lw=lw)
+                    ))
 
 
     # adjust_text(texts, precision=0.001,
@@ -800,7 +782,7 @@ def plot_data1(df, x, y, z, point_labels,  **kwargs):
 
 fig2 = plot_data1(df_merged, x=density_thr, y=density_exp, z=key, point_labels="Label", units=density_units)
 
-fig2.savefig('plots/plotDensities-5.png', dpi=300, bbox_inches="tight")
+fig2.savefig('plots/plotDensities-5.png', dpi=500, bbox_inches="tight")
 
 # plt.show()
 
