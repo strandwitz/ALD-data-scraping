@@ -744,7 +744,7 @@ def plot_data1(df, x, y, z, point_labels,  info={}, info_scatter={}):
                     verticalalignment=valign, horizontalalignment=halign, 
                     size=fontsize, color=text_color, weight=text_weight,
                     arrowprops=dict(arrowstyle="-|>, widthA=.4, widthB=.4",
-                                connectionstyle=f"arc3,rad={rad}", shrinkA=0,
+                                connectionstyle=f"arc3,rad={rad}", shrinkA=0, shrinkB=5,
                                 color=arrow_color, alpha=opacity, lw=linewidth
                     )))
 
