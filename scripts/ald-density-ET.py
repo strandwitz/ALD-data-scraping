@@ -335,19 +335,23 @@ def place_labels_all(pnt_lbl, x_thr, y_thr, y_exp, seq_labels_all, flags, visual
 
 
     halign = "right"
-    valign = "baseline"
+    valign = "bottom"
 
     x_txt = x_thr
     # y_txt = f1(x_txt) + y_scatter
+    vertical_spacing_base = 0.40
+    vertical_spacing_r = vertical_spacing_base
+    vertical_spacing_l = vertical_spacing_base + 0.05
 
-    if x_thr > pivot:
+
+    if x_thr > pivot: # right
         scatter_shift=5
-        y_scatter = ((seq_labels_all+scatter_shift)%8*0.35)
+        y_scatter = ((seq_labels_all+scatter_shift)%8 * vertical_spacing_r)
         y_txt = f1(x_txt) + y_scatter
 
-    else:
+    else: # left
         scatter_shift=11
-        y_scatter = ((seq_labels_all+scatter_shift)%12*0.35)
+        y_scatter = ((seq_labels_all+scatter_shift)%12 * (vertical_spacing_l))
         y_txt = f2(x_txt) + y_scatter
 
 
@@ -587,32 +591,31 @@ def keep_labels_inside_margins(label_coords, ax, axis_margins={}):
 
     return [x_txt, y_txt]
 
-def plot_data1(df, x, y, z, point_labels,  **kwargs):
+def plot_data1(df, x, y, z, point_labels,  info={}, info_scatter={}):
     ald_print_info(df, label="DF PLOTTING")
 
     fig, ax = plt.subplots(figsize=(13,10)) # figsize=(6, 7)
 
     order_z = list(df[z].unique())
 
-    # formated_labels = df[z].apply(create_latex_labels)
-    # print(formated_labels)
-    # print(df[z].value_counts())
 
     ax.axline((0,0), slope=1, color='silver', lw=1, ls='--', alpha=0.5, label='_none_')
-    g1 = sns.scatterplot(ax=ax, data=df, x=x, y=y, hue=z, alpha=0.6, s=35, style=z, hue_order=order_z, style_order=order_z)
-    g2 = sns.scatterplot(ax=ax, data=df, x=x, y=x, color="black", alpha=0.9, s=15, marker="+")
+    g1 = sns.scatterplot(ax=ax, data=df, x=x, y=y, hue=z, style=z, hue_order=order_z, style_order=order_z, **info_scatter)
+
+    # reference markers on axline
+    g2 = sns.scatterplot(ax=ax, data=df, x=x, y=x, color="black", alpha=0.9, s=15, marker="+", label="_none_")
+
+
+    # SET TITLE
+    plt.title(info.get("title"))
+
+    # SET AXIS LABELS
+    ax.set_xlabel(" ".join([x, info.get('units')]))
+    ax.set_ylabel(" ".join([y, info.get('units')]))
 
     plt.minorticks_on()
 
-    # SET TITLE
-    plt.title("ALD Thin Film Density")
-
-    # SET AXIS LABELS
-    ax.set_xlabel(" ".join([x, kwargs.get('units')]))
-    ax.set_ylabel(" ".join([y, kwargs.get('units')]))
-
-
-
+    # set axis limits with extra space at the top of the plot
     g1.set(ylim=(0,(df[x].max()*1.20)), xlim=(0,None))
 
     # PLOT LABELS
@@ -623,19 +626,11 @@ def plot_data1(df, x, y, z, point_labels,  **kwargs):
     df_lbls.sort_values(by=[x,y], ascending=[True,True], inplace=True)
     df_lbls.drop_duplicates(subset=[x, z], keep='last', inplace=True)
 
-    # df_lbls["tmp"] =  df_lbls[point_labels[1]].str.contains( df_lbls[point_labels[0]], regex=False )
     df_lbls[point_labels] = df_lbls[point_labels].fillna('')
-    # filt_material_in_phase = df_lbls.apply(lambda r: r[point_labels[0]] in r[point_labels[1]], axis=1)
-
-    # for lbl_col in point_labels:
-        # print(df_lbls[lbl_col].head())
-        # df_lbls[lbl_col] = df_lbls[lbl_col].apply(create_latex_labels)
+ 
     
     df_lbls[point_labels] = df_lbls[point_labels].apply(create_latex_labels, bold=bold_labels)
-    # df_lbls[point_labels[0]] = df_lbls[point_labels[0]].apply(create_latex_labels)
 
-    # df_lbls.loc[filt_material_in_phase, ["label"]] = df_lbls[point_labels[1]] # NOTE: may need to split str if phase has multiple annotations
-    # df_lbls.loc[~filt_material_in_phase, ["label"]] = df_lbls[point_labels[0]]+"\n"+df_lbls[point_labels[1]].str.replace(r'\s', r'\n', n=1, regex=True)
     df_lbls[point_labels] = df_lbls[point_labels].str.replace(r'\s+', r'\n', n=2, regex=True)
     df_lbls[point_labels] = df_lbls[point_labels].str.strip()
     df_lbls["label_lines"] = df_lbls[point_labels].str.count("\n")+1
@@ -650,9 +645,6 @@ def plot_data1(df, x, y, z, point_labels,  **kwargs):
     df_lbls["seq_lbl_lines"] = df_lbls.groupby(["below_line", "label_lines", "len_twolines"]).cumcount()+1
     df_lbls["seq_labels_all"] = df_lbls.groupby(["label_lines", "len_twolines"]).cumcount()+1
 
-    # df_lbls["label"] = df_lbls[point_labels[1]]
-    # else:
-    #     df_lbls["label"] = df_lbls[point_labels[0]]+"\n"+ df_lbls[point_labels[1]].str.replace(r'\s', r'\n', n=1, regex=True)
 
     print(df_lbls.head(20))
     print(df_lbls.shape)
@@ -736,26 +728,31 @@ def plot_data1(df, x, y, z, point_labels,  **kwargs):
 
 
 
+        opacity=1
+        linewidth=0.5
+        fontsize=8.35
+        pad=0.25
+        padding_offset_points = fontsize * pad
+
+
         pnt_coords = (x_thr, y_exp)
-        text_coords = (x_txt-0.026, y_txt)
+        text_coords_offset = (-1.0 * (padding_offset_points+0.05), padding_offset_points)
         text_coords_arrow = (x_txt, y_txt)
 
-        opacity=1
-        lw=0.4
         texts.append(plt.annotate("", 
-                    xy=pnt_coords, xytext=text_coords_arrow, 
+                    xy=pnt_coords, xytext=text_coords_arrow, xycoords='data', textcoords='data',
                     verticalalignment=valign, horizontalalignment=halign, 
-                    size=7, color=text_color, weight=text_weight,
+                    size=fontsize, color=text_color, weight=text_weight,
                     arrowprops=dict(arrowstyle="-|>, widthA=.4, widthB=.4",
                                 connectionstyle=f"arc3,rad={rad}", shrinkA=0,
-                                color=arrow_color, alpha=opacity, lw=lw
+                                color=arrow_color, alpha=opacity, lw=linewidth
                     )))
 
         texts.append(plt.annotate(pnt_lbl, 
-                    xy=pnt_coords, xytext=text_coords, 
+                    xy=text_coords_arrow, xytext=text_coords_offset, xycoords='data', textcoords='offset points',
                     verticalalignment=valign, horizontalalignment=halign, 
-                    size=7, color=text_color, weight=text_weight,
-                    bbox=dict(boxstyle="square,pad=0.2", fc="white", ec=arrow_color, alpha=opacity, lw=lw)
+                    size=fontsize, color=text_color, weight=text_weight,
+                    bbox=dict(boxstyle=f"square,pad={pad}", fc="white", ec=arrow_color, alpha=opacity, lw=linewidth)
                     ))
 
 
@@ -779,8 +776,9 @@ def plot_data1(df, x, y, z, point_labels,  **kwargs):
     return fig
 
 
-
-fig2 = plot_data1(df_merged, x=density_thr, y=density_exp, z=key, point_labels="Label", units=density_units)
+info=dict(units=density_units, title="ALD Thin Film Density")
+info_scatter=dict(alpha=0.6, s=100)
+fig2 = plot_data1(df_merged, x=density_thr, y=density_exp, z=key, point_labels="Label", info=info, info_scatter=info_scatter)
 
 fig2.savefig('plots/plotDensities-5.png', dpi=500, bbox_inches="tight")
 
