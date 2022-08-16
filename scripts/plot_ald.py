@@ -114,7 +114,7 @@ def get_line_plot(df, x, y, z):
     plt.rc('figure', titlesize=BIGGER_SIZE)  # fontsize of the figure title
 
 
-    fig, ax = plt.subplots(figsize=(8.5,11)) # figsize=(6, 7)
+    fig, ax = plt.subplots(figsize=(10,11)) # figsize=(6, 7)
     ax.grid(True, color = '#e8e8e6', linestyle = '--', linewidth = 0.5)
     # ax = fig.add_subplot()
     # ax = sns.lineplot(data=df, x=x, y=y, hue=z, marker="o", ci=None, markersize=4, alpha = 0.9, linestyle='')
@@ -124,7 +124,7 @@ def get_line_plot(df, x, y, z):
     print(order_z)
 
     g2 = sns.lineplot(ax=ax, data=df, x=x, y=y, hue=z, alpha=0.4, lw=1, ci=None, legend=False, hue_order=order_z)
-    g1 = sns.scatterplot(ax=ax, data=df, x=x, y=y, hue=z, alpha=0.7, s=35, style=z, hue_order=order_z, style_order=order_z)
+    g1 = sns.scatterplot(ax=ax, data=df, x=x, y=y, hue=z, alpha=0.7, s=70, style=z, hue_order=order_z, style_order=order_z)
 
     # SET PLOT TITLE
     plt.title("Density vs Temperature ALD Thin Films")
@@ -154,9 +154,20 @@ def get_line_plot(df, x, y, z):
 
     return fig
 
-def get_fit_plot(df, x, y, z, hue):
+def get_fit_plot(df, x, y, z, hue, info={}):
     # plot
     print(df.info())
+
+    hue_order = info.get("hue_order", None)
+    col_wrap = info.get("col_wrap", 4)
+    palette = info.get("palette", ["orangered", "navy"])
+    markers = info.get("markers", ["d", "s"])
+
+    scatter_kws = {"s": 80, "alpha":0.65}
+    line_kws = {"lw": 2.5, "alpha":0.60}
+
+    scatter_kws.update(info.get("scatter_kws", {}))
+    line_kws.update(info.get("line_kws", {}))
 
     # PLOT
     # fig1, ax1 = plt.subplots()
@@ -173,6 +184,7 @@ def get_fit_plot(df, x, y, z, hue):
     df_plot = df.loc[:,[x,y,z,hue]]
 
     df_plot[z] = df_plot[z].apply(daz.create_latex_labels)
+    # df_plot[hue] = df_plot[hue].apply(lambda x: "PEALD" if x=="TRUE" else "Thermal")
 
     SMALL_SIZE = 22
     MEDIUM_SIZE = 26
@@ -189,13 +201,13 @@ def get_fit_plot(df, x, y, z, hue):
 
 
     # scatter plot with linear regression for each category Z 
-    fig = sns.lmplot(data=df_plot, x=x, y=y, col=z, col_wrap=4, ci=None, 
-        hue=hue, hue_order=[True, False], markers=["^", "v"], palette=["orangered", "navy"],
+    fig = sns.lmplot(data=df_plot, x=x, y=y, col=z, col_wrap=col_wrap, ci=None, 
+        hue=hue, hue_order=hue_order, markers=markers, palette=palette,
         facet_kws = dict(sharex=False, sharey=False), 
-        scatter_kws={"s": 80, "alpha":0.5}, 
-        line_kws={"lw":2.5, "alpha":0.5})
+        scatter_kws=scatter_kws, line_kws=line_kws)
 
-    
+    sns.despine(top=False, right=False, left=False, bottom=False)
+
     # splot2 = sns.lmplot(data=df_plot, x=X, y=Y, hue=Z, ci=None, fit_reg=False, scatter_kws={"s": 10, "alpha":0.4}) # scatter plot with linear regression for each category Z 
     # splot2 = sns.lineplot(data=df_plot, x=X, y=Y, hue=Z, marker="o")
 
@@ -218,14 +230,25 @@ def get_fit_plot(df, x, y, z, hue):
     fig.set_axis_labels( "Deposition Temperature (°C)", "Density $(g.cm^{-3})$" )
 
     # CUSTOMIZE LEGEND
-    sns.move_legend(fig, "lower center", bbox_to_anchor=(0.5, 1), ncol=2, frameon=False)
+
+    # LEGEND
+    fig._legend.set_title(info.get("legend_title", ''))
+    if new_labels := info.get('legend_labels', False):
+        for t, l in zip(fig._legend.texts, new_labels):
+            t.set_text(l)
+
+    sns.move_legend(fig, "lower center", bbox_to_anchor=(0.5, 0.99), ncol=2, frameon=False)
 
     # customize plot spacing and padding
-    plt.subplots_adjust(wspace = 0.19, hspace=0.3)
+    plt.subplots_adjust(wspace = 0.25, hspace=0.3)
     # plt.tight_layout()
     return fig
 
-fig1 = get_fit_plot(df_plot, X, Y, Z, hue="PEALD?")
+
+info = dict(legend_labels=['PEALD', 'Thermal'], hue_order = [True, False], 
+    palette = ["orangered", "navy"])
+
+fig1 = get_fit_plot(df_plot, X, Y, Z, hue="PEALD?", info=info)
 fig2 = get_line_plot(df_plot2, X, Y, Z)
 
 
